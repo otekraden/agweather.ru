@@ -111,3 +111,7 @@ redis-stable.tar.gz
 redis-stable/
 agweather/beget/
 static/datascraper_config.json
+datascraper/rain_water.py
+datascraper/knapsack.py
+_training/
+datascraper/forecasts_old.py

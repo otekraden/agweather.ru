@@ -1,14 +1,22 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .main import main
+# from datascraper import models
 from .models import Location, WeatherPrameter, ForecastSource, \
-    ForecastTemplate, ArchiveSource, ArchiveTemplate
+    ForecastTemplate, ArchiveSource, ArchiveTemplate, \
+    Forecast, Archive
+# from datetime import datetime
+from datetime import timedelta
+from django.utils import timezone
+from backports import zoneinfo
 
 
 def test(request):
     # return HttpResponse("Hello from VPS!!!!")
     return HttpResponse(main())
 
+def scrapdata(request):
+    ForecastTemplate.scrap_all_forecasts()
 
 def init_database(request):
 

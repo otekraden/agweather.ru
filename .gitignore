@@ -115,3 +115,4 @@ datascraper/rain_water.py
 datascraper/knapsack.py
 _training/
 datascraper/forecasts_old.py
+_dump/

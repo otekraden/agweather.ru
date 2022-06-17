@@ -1,0 +1,184 @@
+[
+    {
+        "model": "datascraper.location",
+        "pk": 1,
+        "fields": {
+            "name": "Saint-Petersburg",
+            "region": "Saint-Petersburg",
+            "country": "Russia",
+            "timezone": "Europe/Moscow"
+        }
+    },
+    {
+        "model": "datascraper.location",
+        "pk": 2,
+        "fields": {
+            "name": "Moscow",
+            "region": "Moscow",
+            "country": "Russia",
+            "timezone": "Europe/Moscow"
+        }
+    },
+    {
+        "model": "datascraper.weatherprameter",
+        "pk": "press",
+        "fields": {
+            "name": "Pressure",
+            "tooltip": "Atmospheric pressure",
+            "meas_unit": "mmHg"
+        }
+    },
+    {
+        "model": "datascraper.weatherprameter",
+        "pk": "temp",
+        "fields": {
+            "name": "Temperature",
+            "tooltip": "Air temperature",
+            "meas_unit": "℃"
+        }
+    },
+    {
+        "model": "datascraper.weatherprameter",
+        "pk": "wind_speed",
+        "fields": {
+            "name": "Wind speed",
+            "tooltip": "Wind speed",
+            "meas_unit": "m/s"
+        }
+    },
+    {
+        "model": "datascraper.forecastsource",
+        "pk": "foreca",
+        "fields": {
+            "name": "Foreca.ru",
+            "url": "https://www.foreca.ru/",
+            "chart_color": "#FBFF00"
+        }
+    },
+    {
+        "model": "datascraper.forecastsource",
+        "pk": "meteoinfo",
+        "fields": {
+            "name": "Meteoinfo.ru",
+            "url": "https://meteoinfo.ru/forecasts/",
+            "chart_color": "#00FF00"
+        }
+    },
+    {
+        "model": "datascraper.forecastsource",
+        "pk": "rp5",
+        "fields": {
+            "name": "RP5",
+            "url": "https://rp5.ru/",
+            "chart_color": "#1E90FF"
+        }
+    },
+    {
+        "model": "datascraper.forecastsource",
+        "pk": "yandex",
+        "fields": {
+            "name": "Yandex Pogoda",
+            "url": "https://yandex.ru/pogoda/",
+            "chart_color": "#FF0000"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 1,
+        "fields": {
+            "forecast_source": "rp5",
+            "location": 1,
+            "location_relative_url": "Погода_в_Санкт-Петербурге"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 2,
+        "fields": {
+            "forecast_source": "yandex",
+            "location": 1,
+            "location_relative_url": "saint-petersburg"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 3,
+        "fields": {
+            "forecast_source": "meteoinfo",
+            "location": 1,
+            "location_relative_url": "russia/leningrad-region/sankt-peterburg"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 4,
+        "fields": {
+            "forecast_source": "foreca",
+            "location": 1,
+            "location_relative_url": "Saint_Petersburg?details="
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 5,
+        "fields": {
+            "forecast_source": "rp5",
+            "location": 2,
+            "location_relative_url": "Погода_в_Москве_(ВДНХ)"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 6,
+        "fields": {
+            "forecast_source": "yandex",
+            "location": 2,
+            "location_relative_url": "213"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 7,
+        "fields": {
+            "forecast_source": "meteoinfo",
+            "location": 2,
+            "location_relative_url": "russia/moscow-area/moscow"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 8,
+        "fields": {
+            "forecast_source": "foreca",
+            "location": 2,
+            "location_relative_url": "Moscow?details="
+        }
+    },
+    {
+        "model": "datascraper.archivesource",
+        "pk": "rp5",
+        "fields": {
+            "name": "RP5",
+            "url": "https://rp5.ru/",
+            "chart_color": "white"
+        }
+    },
+    {
+        "model": "datascraper.archivetemplate",
+        "pk": 1,
+        "fields": {
+            "archive_source": "rp5",
+            "location": 1,
+            "location_relative_url": "Архив_погоды_в_Санкт-Петербурге"
+        }
+    },
+    {
+        "model": "datascraper.archivetemplate",
+        "pk": 2,
+        "fields": {
+            "archive_source": "rp5",
+            "location": 2,
+            "location_relative_url": "Архив_погоды_в_Москве_(ВДНХ)"
+        }
+    }
+]

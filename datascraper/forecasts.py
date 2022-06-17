@@ -7,9 +7,9 @@ from pathlib import Path
 ######################################
 # FORECAST SOURCES SCRAPER FUNCTIONS #
 ######################################
-# To arhieve calling functions from forecast template class method
-# their names must be the same as in Models: "template.forecast_source.id"
-
+# !To provide a call function from Forecast template class method
+# "scrap_all_forecasts" their names must be the same as in Database:
+# table "datascraper_forecastsource", col:"id"
 def rp5(start_datetime, url):
 
     # Getting html content from source
@@ -52,22 +52,47 @@ def rp5(start_datetime, url):
 
 
 def yandex(start_datetime, url):
+
     # Getting html content from source
     soup = get_soup(url)
-    ftab = soup.find(
-        'div', class_=[
-            'forecast-details', 'i-bem', 'forecast-details_js_inited'])
-    print(ftab)
+    ftab = soup.find('div', class_='content')
+
     # Getting start date from source html page
+    start_datetime = start_datetime.replace(hour=9, minute=0, second=0,
+                                            microsecond=0)  # Morning
     start_date_from_source = func_start_date_from_source(
         month=month_rusname_to_number(ftab.find(
             'span', class_='forecast-details__day-month').get_text()),
         day=int(ftab.find(
             'strong', class_='forecast-details__day-number').get_text()),
-        req_start_datetime=9  # Morning
+        req_start_datetime=start_datetime
     )
-    
-    return [start_date_from_source]
+
+    # Generating weather parameters rows:
+    # Temperature
+    temp_row = ftab.find_all('div', class_='weather-table__temp')
+    temp_row = [t.get_text() for t in temp_row]
+    # Conversion of the temperature of the form "+6...+8"
+    # to the average value
+    temp_row = [t.replace(chr(8722), '-').split('…') for t in temp_row]
+    temp_row = [[int(i) for i in t] for t in temp_row]
+    temp_row = [int(sum(t)/len(t)) for t in temp_row]
+    # Pressure
+    press_row = ftab.find_all('td', class_='weather-table__' +
+                              'body-cell_type_air-pressure')
+    press_row = [int(p.get_text()) for p in press_row]
+    # Wind velocity
+    wind_vel_row = ftab.find_all('span', class_="wind-speed")
+    wind_vel_row = [int(round(float(w.get_text().replace(',', '.')), 0))
+                    for w in wind_vel_row]
+    # Merge parameters fom source into one tuple
+    raw_data = (temp_row, press_row, wind_vel_row)
+
+    # Generation time row
+    time_row = [9, 15, 21, 3]*(len(temp_row)//4)
+
+    return json_data_gen(
+        start_datetime, start_date_from_source, time_row, raw_data)
 
 
 def meteoinfo(start_datetime, url):
@@ -105,6 +130,7 @@ def get_soup(url):
         driver.close()
         driver.quit()
 
+    # return src
     return BeautifulSoup(src, "lxml")
 
 
@@ -135,8 +161,9 @@ def intp_linear(xa, xc, xb, ya, yb):
 
 def json_data_gen(
         start_datetime, start_date_from_source, time_row, raw_data):
+    """Recalculating forecast data from source datetime row to required row."""
 
-    # Generating datime row from html source
+    # Generating datetime row from html source
     datetime_row, datetime_ = [], start_date_from_source
     for i, hour in enumerate(time_row):
         if i != 0 and hour < time_row[i-1]:

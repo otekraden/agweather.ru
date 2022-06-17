@@ -1,22 +1,15 @@
-from django.shortcuts import render
+# from django.shortcuts import render
 from django.http import HttpResponse
-from .main import main
+# from .main import main
 # from datascraper import models
 from .models import Location, WeatherPrameter, ForecastSource, \
-    ForecastTemplate, ArchiveSource, ArchiveTemplate, \
-    Forecast, Archive
-# from datetime import datetime
-from datetime import timedelta
-from django.utils import timezone
-from backports import zoneinfo
+    ForecastTemplate, ArchiveSource, ArchiveTemplate
 
-
-def test(request):
-    # return HttpResponse("Hello from VPS!!!!")
-    return HttpResponse(main())
 
 def scrapdata(request):
     ForecastTemplate.scrap_all_forecasts()
+    return HttpResponse("Scraper finished its work.")
+
 
 def init_database(request):
 
@@ -77,7 +70,7 @@ def init_database(request):
     ForecastTemplate.objects.get_or_create(
         forecast_source=fs4, location=loc2,
         location_relative_url="Moscow?details=")
-    
+
     ArchiveTemplate.objects.get_or_create(
         archive_source=as1, location=loc1,
         location_relative_url="Архив_погоды_в_Санкт-Петербурге")

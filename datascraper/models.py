@@ -62,6 +62,7 @@ class ForecastTemplate(models.Model):
     def scrap_all_forecasts(cls):
 
         for template in cls.objects.all():
+            print(f"{template}:")
 
             # Getting local datetime at forecast location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
@@ -96,7 +97,6 @@ class ForecastTemplate(models.Model):
                 print(_ex)
                 continue
 
-            print(template)
             for i in forecast_data_json:
                 print(i)
 

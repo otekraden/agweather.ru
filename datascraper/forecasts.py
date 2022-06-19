@@ -2,6 +2,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from pathlib import Path
+import re
 
 
 ######################################
@@ -12,11 +13,11 @@ from pathlib import Path
 # table "datascraper_forecastsource", col:"id"
 def rp5(start_datetime, url):
 
-    # Getting html content from source
+    # Scraping html content from source
     soup = get_soup(url)
     ftab = soup.find(id='ftab_content')
 
-    # Getting start date from source html page
+    # Parsing start date from source html page
     start_date_from_source = ftab.find(
         'span', class_="weekDay").get_text().split(',')[-1].split()
     start_date_from_source = func_start_date_from_source(
@@ -25,11 +26,11 @@ def rp5(start_datetime, url):
         req_start_datetime=start_datetime
     )
 
-    # Generation time row
+    # Parsing time row from source
     time_row = ftab.find('tr', class_="forecastTime").find_all('td')[1:-1]
     time_row = [int(t.get_text()) for t in time_row]
 
-    # Genereating weather parameters rows:
+    # Parsing weather parameters rows from source:
     # Temperature
     temp_row = ftab.find('a', class_='t_temperature')
     temp_row = temp_row.parent.parent.find_all('td')[1:-1]
@@ -44,7 +45,7 @@ def rp5(start_datetime, url):
     wind_vel_row = wind_vel_row.parent.parent.find_all('td')[1:-1]
     wind_vel_row = [w.find('div', class_='wv_0') for w in wind_vel_row]
     wind_vel_row = [int(w.get_text()) if w else 0 for w in wind_vel_row]
-    # Merge parameters fom source into one tuple
+    # Merge parameters from source into one tuple
     raw_data = (temp_row, press_row, wind_vel_row)
 
     return json_data_gen(
@@ -53,11 +54,11 @@ def rp5(start_datetime, url):
 
 def yandex(start_datetime, url):
 
-    # Getting html content from source
+    # Scraping html content from source
     soup = get_soup(url)
     ftab = soup.find('div', class_='content')
 
-    # Getting start date from source html page
+    # Parsing start date from source html page
     start_datetime = start_datetime.replace(hour=9, minute=0, second=0,
                                             microsecond=0)  # Morning
     start_date_from_source = func_start_date_from_source(
@@ -68,7 +69,7 @@ def yandex(start_datetime, url):
         req_start_datetime=start_datetime
     )
 
-    # Generating weather parameters rows:
+    # Parsing weather parameters rows from source:
     # Temperature
     temp_row = ftab.find_all('div', class_='weather-table__temp')
     temp_row = [t.get_text() for t in temp_row]
@@ -76,7 +77,7 @@ def yandex(start_datetime, url):
     # to the average value
     temp_row = [t.replace(chr(8722), '-').split('…') for t in temp_row]
     temp_row = [[int(i) for i in t] for t in temp_row]
-    temp_row = [int(sum(t)/len(t)) for t in temp_row]
+    temp_row = [int(round(sum(t)/len(t))) for t in temp_row]
     # Pressure
     press_row = ftab.find_all('td', class_='weather-table__' +
                               'body-cell_type_air-pressure')
@@ -85,10 +86,10 @@ def yandex(start_datetime, url):
     wind_vel_row = ftab.find_all('span', class_="wind-speed")
     wind_vel_row = [int(round(float(w.get_text().replace(',', '.')), 0))
                     for w in wind_vel_row]
-    # Merge parameters fom source into one tuple
+    # Merge parameters from source into one tuple
     raw_data = (temp_row, press_row, wind_vel_row)
 
-    # Generation time row
+    # Parsing time row from source
     time_row = [9, 15, 21, 3]*(len(temp_row)//4)
 
     return json_data_gen(
@@ -96,11 +97,103 @@ def yandex(start_datetime, url):
 
 
 def meteoinfo(start_datetime, url):
-    return ['meteoinfo', [url], start_datetime.isoformat()]
+
+    # Scraping html content from source
+    soup = get_soup(url)
+    ftab = soup.find('div', class_='hidden-desktop')
+
+    # Parsing start date from source html page
+    start_datetime = start_datetime.replace(minute=0, second=0, microsecond=0)
+    start_date_from_source = ftab.find('nobr')
+    start_hour = start_date_from_source.parent.next_sibling.get_text()
+    start_hour = 15 if start_hour.strip().lower() == 'день' else 3
+    start_date_from_source = start_date_from_source.get_text()
+    start_date_from_source = func_start_date_from_source(
+        month=month_rusname_to_number(start_date_from_source),
+        day=int(re.findall(r'\d+', start_date_from_source)[0]),
+        req_start_datetime=start_datetime
+    )
+
+    # Parsing weather parameters rows from source:
+    # Temperature
+    temp_row = ftab.find_all('span', class_='fc_temp_short')
+    temp_row = [int(t.get_text().rstrip('°')) for t in temp_row]
+    # Wind velocity
+    wind_vel_row = ftab.find_all('i')
+    press_row = wind_vel_row[:]
+    wind_vel_row = [int(w.next_sibling.get_text()) for w in wind_vel_row]
+    # Pressure
+    press_row = [int(p.parent.next_sibling.get_text()) for p in press_row]
+
+    # Parsing time row from source
+    time, time_row = start_hour, []
+    for t in temp_row:
+        time_row.append(time)
+        time = 15 if time == 3 else 3
+
+    # Merge parameters from source into one tuple
+    raw_data = (temp_row, press_row, wind_vel_row)
+
+    return json_data_gen(
+        start_datetime, start_date_from_source, time_row, raw_data)
 
 
-def foreca(start_datetime, url):
-    return ['foreca', [url], start_datetime.isoformat()]
+def foreca(start_datetime, url: str):
+
+    # Scraping html content from source first day page
+    soup = get_soup(url)
+
+    # print(soup)
+    ftab = soup.find('div', class_='page-content')
+
+    # Parsing start date from source html page
+    start_date_from_source = ftab.find('div', class_='date').get_text().split()
+    start_date_from_source = func_start_date_from_source(
+        month=month_rusname_to_number(start_date_from_source[1][:3]),
+        day=int(start_date_from_source[0]),
+        req_start_datetime=start_datetime
+    )
+
+    # Parsing next days urls from source first day page
+    domain = url[:url.find('/', 8)]
+    next_days_urls = ftab.find('ul', class_='days').find_all('a')[1:]
+    next_days_urls = [domain + nd.get('href') for nd in next_days_urls]
+    # print(next_days_urls)
+
+    # Scraping tables data to array
+    ftabs = [ftab] + [get_soup(ndu).find('div', class_='page-content') for
+                      ndu in next_days_urls]
+
+    raw_data = [[] for i in range(4)]
+    # Parsing from saved tables
+    for ftab in ftabs:
+        # Parsing time row from source
+        ftab = ftab.find('div', class_='hourContainer')
+        time_row = ftab.find_all('span', class_='time_24h')
+        time_row = [int(t.get_text()) for t in time_row]
+        raw_data[0].extend(time_row)
+
+        # Parsing weather parameters rows from source pages:
+        # Temperature
+        temp_row = ftab.find_all('span', class_='t')
+        temp_row = [int(t.find('span', class_='temp_c').
+                        get_text()) for t in temp_row]
+        raw_data[1].extend(temp_row)
+        # Pressure
+        press_row = ftab.find_all('span', class_='value pres pres_mmhg')
+        press_row = [int(round(float(p.get_text()))) for p in press_row]
+        raw_data[2].extend(press_row)
+        # Wind velocity
+        wind_vel_row = ftab.find_all('span', class_='windSpeed')
+        wind_vel_row = [int(w.find('span', class_='value wind wind_ms').
+                            get_text().split()[0]) for w in wind_vel_row]
+        raw_data[3].extend(wind_vel_row)
+
+    # for i in raw_data:
+    #     print(i)
+
+    return json_data_gen(
+        start_datetime, start_date_from_source, raw_data[0], raw_data[1:])
 
 
 ########
@@ -109,7 +202,7 @@ def foreca(start_datetime, url):
 
 
 def get_soup(url):
-    """Getting html content from source with the help of Selenium library"""
+    """Scraping html content from source with the help of Selenium library"""
     options = webdriver.ChromeOptions()
     options.headless = True
     options.add_argument("--disable-blink-features=AutomationControlled")
@@ -159,37 +252,43 @@ def intp_linear(xa, xc, xb, ya, yb):
     return round((xc-xa)/(xb-xa)*(yb-ya)+ya)
 
 
-def json_data_gen(
-        start_datetime, start_date_from_source, time_row, raw_data):
+def json_data_gen(start_datetime, start_date_from_source,
+                  time_row_from_source, raw_data):
     """Recalculating forecast data from source datetime row to required row."""
 
     # Generating datetime row from html source
-    datetime_row, datetime_ = [], start_date_from_source
-    for i, hour in enumerate(time_row):
-        if i != 0 and hour < time_row[i-1]:
-            datetime_ += timedelta(days=1)
-        datetime_row.append(datetime_ + timedelta(hours=hour))
+    datetime_row_from_source = []
+    for i, hour in enumerate(time_row_from_source):
+        if i != 0 and hour < time_row_from_source[i-1]:
+            start_date_from_source += timedelta(days=1)
+        datetime_row_from_source.append(start_date_from_source
+                                        + timedelta(hours=hour))
 
     # Generating json record
     data_json, datetime_ = [[] for i in raw_data], start_datetime
-    for i, dt in enumerate(datetime_row):
-        if i == 0 and datetime_ < dt:
-            [data_json[p].append(None) for p in range(len(raw_data))]
+    datetime_step = timedelta(hours=6)
+    # index = 0
+    while datetime_ <= datetime_row_from_source[-1]:
+        for i, dt in enumerate(datetime_row_from_source):
+            if (i == 0 and datetime_ < dt) or dt - datetime_ >= datetime_step:
+                [data_json[p].append(None) for p in range(len(raw_data))]
+            elif datetime_ == dt:
+                [data_json[j].append(p[i]) for j, p in enumerate(raw_data)]
+            elif datetime_ < dt:
+                [data_json[j].append(intp_linear(
+                    datetime_row_from_source[i-1].timestamp(),
+                    datetime_.timestamp(),
+                    dt.timestamp(),
+                    p[i-1],
+                    p[i])) for j, p in enumerate(raw_data)]
+            else:
+                continue
 
-        elif datetime_ == dt:
-            [data_json[j].append(p[i]) for j, p in enumerate(raw_data)]
+            del datetime_row_from_source[:i]
+            for p in range(len(raw_data)):
+                del raw_data[p][:i]
+            break
 
-        elif datetime_ < dt:
-            [data_json[j].append(intp_linear(
-                datetime_row[i-1].timestamp(),
-                datetime_.timestamp(),
-                dt.timestamp(),
-                p[i-1],
-                p[i])) for j, p in enumerate(raw_data)]
-        else:
-            continue
-
-        # Next step datetime
-        datetime_ += timedelta(hours=6)
+        datetime_ += datetime_step
 
     return data_json

@@ -59,9 +59,15 @@ class ForecastTemplate(models.Model):
         return f"{self.location} >> {self.forecast_source}"
 
     @classmethod
-    def scrap_all_forecasts(cls):
+    def scrap_forecasts(cls, forecast_source_id=None):
 
-        for template in cls.objects.all():
+        if forecast_source_id:
+            templates = cls.objects.filter(
+                forecast_source_id=forecast_source_id)
+        else:
+            templates = cls.objects.all()
+
+        for template in templates:
             print(f"{template}:")
 
             # Getting local datetime at forecast location

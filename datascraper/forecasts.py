@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -211,8 +212,13 @@ def get_soup(url):
     driver_executable_path = str(
         Path(__file__).resolve().parent) + "/chromedriver"
 
+    caps = DesiredCapabilities().CHROME
+    # caps["pageLoadStrategy"] = "normal"  #  Waits for full page load
+    caps["pageLoadStrategy"] = "eager"  # Waits for page to be interactive
+    # caps["pageLoadStrategy"] = "none"   # Do not wait for full page load
+
     driver = webdriver.Chrome(executable_path=driver_executable_path,
-                              options=options)
+                              options=options, desired_capabilities=caps)
 
     try:
         driver.get(url=url)

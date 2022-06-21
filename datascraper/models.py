@@ -167,11 +167,6 @@ class ArchiveTemplate(models.Model):
     def scrap_archive(cls):
         templates = cls.objects.all()
 
-        # a = Forecast.objects.filter(forecast_template__id=16)
-
-
-        # # return None
-
         for template in templates:
             print(f"Scraping archive: {template}")
 
@@ -186,7 +181,7 @@ class ArchiveTemplate(models.Model):
             # Full pass to archive source
             archive_url = template.archive_source.url + \
                 template.location_relative_url
-            
+
             try:
                 last_record_datetime = Archive.objects.filter(
                     archive_template__id=template.id).latest(
@@ -194,15 +189,11 @@ class ArchiveTemplate(models.Model):
                     tzinfo=timezone_info)
             except Archive.DoesNotExist:
                 last_record_datetime = None
-            
-            # print(last_record_datetime)
 
             archive_data = archive.arch_rp5(
                 start_archive_datetime, archive_url, last_record_datetime)
-            
+
             for record in archive_data:
-                # pass
-                # print(type(template.id))
 
                 Archive.objects.get_or_create(
                     archive_template=template,
@@ -224,5 +215,6 @@ class Archive(models.Model):
         index_together = ['archive_template', 'record_datetime']
 
     def __str__(self):
-        return f"{self.archive_template.archive_source.name} >> {self.archive_template.location.name} >> \
-                Scraped: {self.scraped_datetime.isoformat()}"
+        return f"{self.archive_template.archive_source.name} >> \
+            {self.archive_template.location.name} >> \
+            Scraped: {self.scraped_datetime.isoformat()}"

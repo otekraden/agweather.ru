@@ -204,6 +204,25 @@ def foreca(start_datetime, url: str):
 
 def get_soup(url):
     """Scraping html content from source with the help of Selenium library"""
+
+    driver = init_selenium_driver()
+
+    try:
+        driver.get(url=url)
+        src = driver.page_source
+    except Exception as _ex:
+        print(_ex)
+    finally:
+        driver.close()
+        driver.quit()
+
+    # return src
+    return BeautifulSoup(src, "lxml")
+
+
+def init_selenium_driver():
+    """Selenium driver initialization"""
+
     options = webdriver.ChromeOptions()
     options.headless = True
     options.add_argument("--disable-blink-features=AutomationControlled")
@@ -217,20 +236,8 @@ def get_soup(url):
     caps["pageLoadStrategy"] = "eager"  # Waits for page to be interactive
     # caps["pageLoadStrategy"] = "none"   # Do not wait for full page load
 
-    driver = webdriver.Chrome(executable_path=driver_executable_path,
-                              options=options, desired_capabilities=caps)
-
-    try:
-        driver.get(url=url)
-        src = driver.page_source
-    except Exception as _ex:
-        print(_ex)
-    finally:
-        driver.close()
-        driver.quit()
-
-    # return src
-    return BeautifulSoup(src, "lxml")
+    return webdriver.Chrome(executable_path=driver_executable_path,
+                            options=options, desired_capabilities=caps)
 
 
 def func_start_date_from_source(month, day, req_start_datetime):

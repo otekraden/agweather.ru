@@ -3,7 +3,7 @@ from datascraper.models import ForecastTemplate, ForecastSource
 
 
 class Command(BaseCommand):
-    help = 'Run datascraper for specified source.'
+    help = 'Run forecast scraper for specified source.'
 
     def add_arguments(self, parser):
         parser.add_argument('forecast_source_id')
@@ -19,6 +19,7 @@ class Command(BaseCommand):
                 ForecastSource.objects.get(id=forecast_source_id)
                 ForecastTemplate.scrap_forecasts(forecast_source_id)
 
-            return f"Scraper finished its work for {forecast_source_id}."
+            return "Forecast scraper finished its work for {0}."\
+                .format(forecast_source_id)
         except Exception as e:
             print(e)

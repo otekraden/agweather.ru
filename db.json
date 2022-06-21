@@ -20,6 +20,26 @@
         }
     },
     {
+        "model": "datascraper.location",
+        "pk": 3,
+        "fields": {
+            "name": "New_York",
+            "region": "New_York",
+            "country": "USA",
+            "timezone": "America/New_York"
+        }
+    },
+    {
+        "model": "datascraper.location",
+        "pk": 4,
+        "fields": {
+            "name": "Sydney",
+            "region": "Australia",
+            "country": "Australia",
+            "timezone": "Australia/Sydney"
+        }
+    },
+    {
         "model": "datascraper.weatherprameter",
         "pk": "press",
         "fields": {
@@ -97,7 +117,7 @@
         "fields": {
             "forecast_source": "yandex",
             "location": 1,
-            "location_relative_url": "saint-petersburg"
+            "location_relative_url": "details/10-day-weather?lat=59.938951&lon=30.315635&via=ms"
         }
     },
     {
@@ -115,7 +135,7 @@
         "fields": {
             "forecast_source": "foreca",
             "location": 1,
-            "location_relative_url": "Saint_Petersburg?details="
+            "location_relative_url": "Russia/Saint_Petersburg?details"
         }
     },
     {
@@ -133,7 +153,7 @@
         "fields": {
             "forecast_source": "yandex",
             "location": 2,
-            "location_relative_url": "213"
+            "location_relative_url": "details/10-day-weather?lat=55.75581741&lon=37.61764526&via=ms"
         }
     },
     {
@@ -142,7 +162,7 @@
         "fields": {
             "forecast_source": "meteoinfo",
             "location": 2,
-            "location_relative_url": "russia/moscow-area/moscow"
+            "location_relative_url": "russia/moscow-area/sheremetevo"
         }
     },
     {
@@ -151,7 +171,79 @@
         "fields": {
             "forecast_source": "foreca",
             "location": 2,
-            "location_relative_url": "Moscow?details="
+            "location_relative_url": "Russia/Moscow?details"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 9,
+        "fields": {
+            "forecast_source": "rp5",
+            "location": 3,
+            "location_relative_url": "Погода_в_Нью-Йорке"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 10,
+        "fields": {
+            "forecast_source": "rp5",
+            "location": 4,
+            "location_relative_url": "Погода_в_Сиднее,_Австралия"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 11,
+        "fields": {
+            "forecast_source": "yandex",
+            "location": 4,
+            "location_relative_url": "sydney/details/10-day-weather?via=ms"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 12,
+        "fields": {
+            "forecast_source": "yandex",
+            "location": 3,
+            "location_relative_url": "new-york/details/10-day-weather?via=ms"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 13,
+        "fields": {
+            "forecast_source": "meteoinfo",
+            "location": 3,
+            "location_relative_url": "usa/new-yorkjohn"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 14,
+        "fields": {
+            "forecast_source": "meteoinfo",
+            "location": 4,
+            "location_relative_url": "australia/sydney"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 15,
+        "fields": {
+            "forecast_source": "foreca",
+            "location": 4,
+            "location_relative_url": "Australia/Sydney?details"
+        }
+    },
+    {
+        "model": "datascraper.forecasttemplate",
+        "pk": 16,
+        "fields": {
+            "forecast_source": "foreca",
+            "location": 3,
+            "location_relative_url": "United_States/New_York/New_York?details"
         }
     },
     {
@@ -179,6 +271,24 @@
             "archive_source": "rp5",
             "location": 2,
             "location_relative_url": "Архив_погоды_в_Москве_(ВДНХ)"
+        }
+    },
+    {
+        "model": "datascraper.archivetemplate",
+        "pk": 3,
+        "fields": {
+            "archive_source": "rp5",
+            "location": 3,
+            "location_relative_url": "Архив_погоды_в_Ист-Элмхерсте_(аэропорт)"
+        }
+    },
+    {
+        "model": "datascraper.archivetemplate",
+        "pk": 4,
+        "fields": {
+            "archive_source": "rp5",
+            "location": 4,
+            "location_relative_url": "Архив_погоды_в_Сиднее_(аэропорт)"
         }
     }
 ]

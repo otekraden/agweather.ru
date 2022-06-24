@@ -40,29 +40,32 @@
         }
     },
     {
-        "model": "datascraper.weatherprameter",
-        "pk": "press",
+        "model": "datascraper.weatherparameter",
+        "pk": 0,
         "fields": {
-            "name": "Pressure",
-            "tooltip": "Atmospheric pressure",
-            "meas_unit": "mmHg"
-        }
-    },
-    {
-        "model": "datascraper.weatherprameter",
-        "pk": "temp",
-        "fields": {
+            "var_name": "temp",
             "name": "Temperature",
             "tooltip": "Air temperature",
             "meas_unit": "℃"
         }
     },
     {
-        "model": "datascraper.weatherprameter",
-        "pk": "wind_speed",
+        "model": "datascraper.weatherparameter",
+        "pk": 1,
         "fields": {
-            "name": "Wind speed",
-            "tooltip": "Wind speed",
+            "var_name": "press",
+            "name": "Pressure",
+            "tooltip": "Atmospheric pressure",
+            "meas_unit": "mmHg"
+        }
+    },
+    {
+        "model": "datascraper.weatherparameter",
+        "pk": 2,
+        "fields": {
+            "var_name": "wind_vel",
+            "name": "Wind velocity",
+            "tooltip": "Wind velocity",
             "meas_unit": "m/s"
         }
     },

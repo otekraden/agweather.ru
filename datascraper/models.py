@@ -22,8 +22,9 @@ class Location(models.Model):
         return self.name
 
 
-class WeatherPrameter(models.Model):
-    param_key = models.CharField(max_length=10, primary_key=True)
+class WeatherParameter(models.Model):
+    id = models.IntegerField(primary_key=True)
+    var_name = models.CharField(max_length=10)
     name = models.CharField(max_length=30)
     tooltip = models.CharField(max_length=30)
     meas_unit = models.CharField(max_length=30)

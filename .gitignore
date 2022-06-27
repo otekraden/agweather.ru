@@ -1,5 +1,5 @@
 db.sqlite3
-settings.py
+# settings.py
 _temp
 static/admin
 # Byte-compiled / optimized / DLL files

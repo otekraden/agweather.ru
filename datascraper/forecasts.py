@@ -209,15 +209,15 @@ def get_soup(url):
 
     driver = init_selenium_driver()
 
-    try:
-        driver.get(url=url)
-        src = driver.page_source
-    except Exception as _ex:
-        print(_ex)
-    finally:
-        print(url)
-        driver.close()
-        driver.quit()
+    # try:
+    driver.get(url=url)
+    src = driver.page_source
+    # except Exception as _ex:
+    #     print(_ex)
+    # finally:
+    #     print(url)
+    driver.close()
+    driver.quit()
 
     # return src
     return BeautifulSoup(src, "lxml")

@@ -69,7 +69,7 @@ class ForecastTemplate(models.Model):
             templates = cls.objects.all()
 
         for template in templates:
-            print(f"Scraping forecast: {template}")
+            # print(f"Scraping forecast: {template}")
 
             # Getting local datetime at forecast location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
@@ -79,7 +79,7 @@ class ForecastTemplate(models.Model):
             start_forecast_datetime = ForecastTemplate.start_forecast_datetime(
                 timezone_info, local_datetime)
 
-            print(start_forecast_datetime)
+            # print(start_forecast_datetime)
 
             # Full pass to forecast source
             forecast_url = template.forecast_source.url + \
@@ -90,13 +90,13 @@ class ForecastTemplate(models.Model):
             try:
                 forecast_data_json = scraper_func(
                     start_forecast_datetime, forecast_url)
-            except Exception as _ex:
+            except Exception:
                 print(f"Failed to scrap data for {template}:")
-                print(_ex)
+                # print(_ex)
                 continue
 
-            for i in forecast_data_json:
-                print(i)
+            # for i in forecast_data_json:
+            #     print(i)
 
             Forecast.objects.get_or_create(
                 forecast_template=template,
@@ -169,7 +169,7 @@ class ArchiveTemplate(models.Model):
         templates = cls.objects.all()
 
         for template in templates:
-            print(f"Scraping archive: {template}")
+            # print(f"Scraping archive: {template}")
 
             # Getting local datetime at archive location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)

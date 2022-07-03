@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from datascraper.models import ForecastTemplate, ForecastSource
+from datetime import datetime
 
 
 class Command(BaseCommand):
@@ -10,6 +11,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
+        print(f"{datetime.now().isoformat()} > Forecast scraper START")
+
         forecast_source_id = kwargs['forecast_source_id']
 
         try:
@@ -19,7 +22,10 @@ class Command(BaseCommand):
                 ForecastSource.objects.get(id=forecast_source_id)
                 ForecastTemplate.scrap_forecasts(forecast_source_id)
 
-            return "Forecast scraper finished its work for {0}."\
-                .format(forecast_source_id)
         except Exception as e:
             print(e)
+
+        print(f"{datetime.now().isoformat()} > Forecast scraper STOP")
+
+        return "Forecast scraper finished its work for {0}."\
+            .format(forecast_source_id)

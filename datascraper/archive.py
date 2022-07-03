@@ -1,9 +1,9 @@
-from selenium.webdriver.common.by import By
-from datascraper.forecasts import month_rusname_to_number, init_selenium_driver
+# from selenium.webdriver.common.by import By
+from datascraper.forecasts import month_rusname_to_number
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import re
-from time import sleep as time_sleep
+import requests
 
 #############################
 # ARCHIVE SCRAPER FUNCTIONS #
@@ -12,35 +12,38 @@ from time import sleep as time_sleep
 
 def arch_rp5(start_datetime: datetime, url, end_datetime=None):
 
-    # Initialization selenium driver
-    driver = init_selenium_driver()
-    driver.get(url)
-
     #  Default archive beginning 01.01.2022 00:00 local time
     if not end_datetime:
         end_datetime = start_datetime.replace(
             year=2022, month=1, day=1, hour=0)
-        step_option = 2  # 30 days
+        step_option = '30'  # 30 days
     else:
-        step_option = 0  # 1 day
+        step_option = '1'  # 1 day
+
+    headers = {
+        'Accept': '*/*',
+        'Referer': 'https://rp5.ru/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/\
+            537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+    }
 
     # While cycle back to end_datetime.
     arch_data, date_ = [], start_datetime
     while date_ > end_datetime:
 
-        # print(date_.isoformat())
-        # Scraping html content from source
-        date_input = driver.find_element(By.ID, 'calender_archive')
-        # selected period 30 days
-        period_input = driver.find_elements(
-            By.CLASS_NAME, 'input_radio')[step_option]
-        period_input.click()
-        date_input.clear()
-        date_input.send_keys(date_.strftime("%d.%m.%Y"))
-        select_button = driver.find_element(By.CLASS_NAME, 'archButton')
-        select_button.click()
-        time_sleep(1)
-        src = driver.page_source
+        payload = {
+            'ArchDate': date_.strftime("%d.%m.%Y"),
+            'pe': step_option
+        }
+
+        response = requests.post(
+            url=url,
+            # cookies=cookies,
+            headers=headers,
+            data=payload
+        )
+
+        src = response.text
         soup = BeautifulSoup(src, "lxml")
         atab = soup.find('table', id='archiveTable')
 
@@ -86,8 +89,5 @@ def arch_rp5(start_datetime: datetime, url, end_datetime=None):
         date_ -= timedelta(days=30)
 
     # END While cycle
-
-    driver.close()
-    driver.quit()
 
     return arch_data

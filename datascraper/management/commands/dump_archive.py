@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
             for obj in Archive.objects.all():
 
-                record = (obj.scraped_datetime,
+                record = (  # obj.scraped_datetime,
                           obj.record_datetime,
                           obj.data_json,
                           obj.archive_template)

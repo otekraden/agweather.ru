@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        print(f"{datetime.now().isoformat()} > Forecast scraper START")
+        print(f"{datetime.now().isoformat(' ')} > Forecast scraper START")
 
         forecast_source_id = kwargs['forecast_source_id']
 
@@ -25,7 +25,4 @@ class Command(BaseCommand):
         except Exception as e:
             print(e)
 
-        print(f"{datetime.now().isoformat()} > Forecast scraper STOP")
-
-        return "Forecast scraper finished its work for {0}."\
-            .format(forecast_source_id)
+        print(f"{datetime.now().isoformat(' ')} > Forecast scraper STOP")

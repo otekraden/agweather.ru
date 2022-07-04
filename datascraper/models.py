@@ -90,9 +90,9 @@ class ForecastTemplate(models.Model):
             try:
                 forecast_data_json = scraper_func(
                     start_forecast_datetime, forecast_url)
-            except Exception:
-                print(f"Failed to scrap data for {template}:")
-                # print(_ex)
+            except Exception as _ex:
+                print(f"Failed to scrap forecast data for {template}:")
+                print(_ex)
                 continue
 
             # for i in forecast_data_json:
@@ -191,8 +191,13 @@ class ArchiveTemplate(models.Model):
             except Archive.DoesNotExist:
                 last_record_datetime = None
 
-            archive_data = archive.arch_rp5(
-                start_archive_datetime, archive_url, last_record_datetime)
+            try:
+                archive_data = archive.arch_rp5(
+                    start_archive_datetime, archive_url, last_record_datetime)
+            except Exception as _ex:
+                print(f"Failed to scrap archive data for {template}:")
+                print(_ex)
+                continue
 
             for record in archive_data:
 

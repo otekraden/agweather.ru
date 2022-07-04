@@ -8,10 +8,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        print(f"{datetime.now().isoformat()} > Archive scraper START")
+        print(f"{datetime.now().isoformat(' ')} > Archive scraper START")
 
         ArchiveTemplate.scrap_archive()
 
-        print(f"{datetime.now().isoformat()} > Archive scraper STOP")
-
-        return "Archive scraper finished its work."
+        print(f"{datetime.now().isoformat(' ')} > Archive scraper STOP")

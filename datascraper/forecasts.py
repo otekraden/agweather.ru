@@ -215,7 +215,8 @@ def get_soup(url):
     load_dotenv()
     PROXY = os.environ["PROXY"]
     proxies = {
-        'https': PROXY
+        # 'https': PROXY
+        'http': '178.49.14.57:3128'
     }
 
     response = requests.get(

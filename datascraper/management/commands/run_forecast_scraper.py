@@ -25,4 +25,4 @@ class Command(BaseCommand):
         except Exception as e:
             print(e)
 
-        print(f"{datetime.now().isoformat(' ')} > Forecast scraper STOP")
+        print(f"{datetime.now().isoformat(' ')} > Forecast scraper END")

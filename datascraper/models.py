@@ -30,7 +30,7 @@ class WeatherParameter(models.Model):
     meas_unit = models.CharField(max_length=30)
 
     def __str__(self):
-        return self.param_key
+        return self.var_name
 
 
 ####################

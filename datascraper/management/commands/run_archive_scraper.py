@@ -12,4 +12,4 @@ class Command(BaseCommand):
 
         ArchiveTemplate.scrap_archive()
 
-        print(f"{datetime.now().isoformat(' ')} > Archive scraper STOP")
+        print(f"{datetime.now().isoformat(' ')} > Archive scraper END")

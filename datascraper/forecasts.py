@@ -4,6 +4,7 @@ import re
 import requests
 import os
 from dotenv import load_dotenv
+from fake_useragent import UserAgent
 
 
 ######################################
@@ -201,35 +202,72 @@ def foreca(start_datetime, url: str):
 # MISC #
 ########
 
+# list of random proxies
+proxies = []
+
 
 def get_soup(url):
     """Scraping html content from source with the help of Selenium library"""
+    global proxies
 
-    headers = {
-        'Accept': '*/*',
-        # 'Referer': 'https://rp5.ru/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/\
-            537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-    }
+    if not proxies:
+        get_proxies()
+
+    headers = {'Accept': '*/*', 'User-Agent': UserAgent().random}
+
+    # headers = {
+    #     'Accept': '*/*',
+    #     # 'Referer': 'https://rp5.ru/',
+    #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/\
+    #     537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+    # }
+    # print(headers)
+
+
+    while proxies:
+
+        try:
+
+            response = requests.get(
+                url=url,
+                headers=headers,
+                proxies=proxies,
+                # proxies={'https': proxies[0]},
+                timeout=10
+            )
+
+            src = response.text
+            return BeautifulSoup(src, "lxml")
+
+        except Exception:
+            print('Proxy ' + proxies[0] + ' deleted.')
+            del proxies[0]
+
+
+def get_proxies():
+    """Scraping random proxy list"""
+    print('get_proxies called!!!')
 
     load_dotenv()
-    PROXY = os.environ["PROXY"]
-    proxies = {
-        # 'https': PROXY
-        'http': '178.49.14.57:3128'
-    }
+    proxies = os.environ["PROXIES"].split('\n')
 
-    response = requests.get(
-        url=url,
-        # cookies=cookies,
-        headers=headers,
-        proxies=proxies,
-        timeout=10
-    )
+    print(proxies)
+    # proxies = {
+    #     # 'https': PROXY
+    #     'https': '193.233.202.75:8080',
+    #     # 'http': '85.26.146.169:80'
+    # }
 
-    src = response.text
+    # headers = {'Accept': '*/*', 'User-Agent': UserAgent().random}
+    # proxies_req = requests.get('https://www.sslproxies.org/', headers=headers)
+    # proxies_doc = proxies_req.text
+    # soup = BeautifulSoup(proxies_doc, 'html.parser')
+    # proxies_table = soup.find(
+    #     'table', class_='table table-striped table-bordered')
 
-    return BeautifulSoup(src, "lxml")
+    # for row in proxies_table.tbody.find_all('tr'):
+    #     proxies.append(':'.join(
+    #         [td.get_text() for td in row.find_all('td')[:2]]))
 
 
 def func_start_date_from_source(month, day, req_start_datetime):

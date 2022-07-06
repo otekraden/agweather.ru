@@ -16,7 +16,8 @@ def main(request):
 
     load_dotenv()
 
-    a = os.environ["TEST_SECRET"]
+    # a = os.environ["TEST_SECRET"]
+    a = os.environ["PROXIES"]
 
     print(a)
 

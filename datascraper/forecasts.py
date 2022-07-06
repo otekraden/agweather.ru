@@ -5,6 +5,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from fake_useragent import UserAgent
+from pprint import pprint
 
 
 ######################################
@@ -58,8 +59,13 @@ def yandex(start_datetime, url):
 
     # Scraping html content from source
     soup = get_soup(url)
-    ftab = soup.find('div', class_='content')
+    ftab = soup.find('div', class_='sc-e9667f21-0 gKfmfO')
+    # ftab = soup.find('main').find_all('div', recursive=True)
+    # ftab = [f.get_text() for f in ftab]
+    # # ftab = ftab.findChildren('article', recursive=False)
 
+    pprint(ftab)
+    return
     # Parsing start date from source html page
     start_datetime = start_datetime.replace(hour=9, minute=0, second=0,
                                             microsecond=0)  # Morning
@@ -123,7 +129,7 @@ def meteoinfo(start_datetime, url):
     # Wind velocity
     wind_vel_row = ftab.find_all('i')
     press_row = wind_vel_row[:]
-    wind_vel_row = [int(w.next_sibling.get_text()) for w in wind_vel_row]
+    wind_vel_row = [int(w.parent.get_text()) for w in wind_vel_row]
     # Pressure
     press_row = [int(p.parent.next_sibling.get_text()) for p in press_row]
 
@@ -218,40 +224,49 @@ def get_soup(url):
     # headers = {
     #     'Accept': '*/*',
     #     # 'Referer': 'https://rp5.ru/',
-    #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/\
-    #     537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+    #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+    #         AppleWebKit/537.36 (KHTML, like Gecko) \
+    #             Chrome/114.0.0.0 Safari/537.36',
     # }
-    # print(headers)
+    # # print(headers)
+
+    proxy = proxies[datetime.now().day % len(proxies)]
+
+    # print(proxy)
 
 
-    while proxies:
+    try:
 
-        try:
+        response = requests.get(
+            url=url,
+            headers=headers,
+            # proxies=proxies,
+            proxies={'https': proxy},
+            timeout=10
+        )
 
-            response = requests.get(
-                url=url,
-                headers=headers,
-                proxies=proxies,
-                # proxies={'https': proxies[0]},
-                timeout=10
-            )
+        src = response.text
 
-            src = response.text
-            return BeautifulSoup(src, "lxml")
+        with open('soup.html', 'w') as file:
+            file.write(src)
 
-        except Exception:
-            print('Proxy ' + proxies[0] + ' deleted.')
-            del proxies[0]
+        return BeautifulSoup(src, "lxml")
+
+    except Exception:
+        print('Proxy ' + proxies[0] + ' deleted.')
+        del proxies[0]
 
 
 def get_proxies():
     """Scraping random proxy list"""
     print('get_proxies called!!!')
-
+    global proxies
     load_dotenv()
     proxies = os.environ["PROXIES"].split('\n')
+    proxies = [p.split(':') for p in proxies]
+    proxies = [f'http://{p[2]}:{p[3]}@{p[0]}:{p[1]}' for p in proxies]
 
-    print(proxies)
+    # print(proxies)
     # proxies = {
     #     # 'https': PROXY
     #     'https': '193.233.202.75:8080',
@@ -259,7 +274,8 @@ def get_proxies():
     # }
 
     # headers = {'Accept': '*/*', 'User-Agent': UserAgent().random}
-    # proxies_req = requests.get('https://www.sslproxies.org/', headers=headers)
+    # proxies_req = requests.get('https://www.sslproxies.org/',
+    #                            headers=headers)
     # proxies_doc = proxies_req.text
     # soup = BeautifulSoup(proxies_doc, 'html.parser')
     # proxies_table = soup.find(

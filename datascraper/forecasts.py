@@ -6,13 +6,14 @@ import requests
 import os
 from dotenv import load_dotenv
 from fake_useragent import UserAgent
-from pprint import pprint
+# from pprint import pprint
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium_stealth import stealth
-from random import choice
+# from random import choice
 import zipfile
+
 
 ######################################
 # FORECAST SOURCES SCRAPER FUNCTIONS #
@@ -66,11 +67,6 @@ def yandex(start_datetime, url):
     # Scraping html content from source
     soup = get_soup_selenium(url)
     ftab = soup.find('div', class_='sc-f83bbea-0 gyELnZ')
-    # ftab = soup.find('li', class_='parameter-wrapper general-info__parameter').get_text()
-    # ftab = soup.find('main').find_all('div', recursive=False)[1].find_all('article', recursive=False)
-    # ftab = [f.find_all('div', recursive=False) for f in ftab]
-    # ftab = [f.get_text() for f in ftab]
-    # # ftab = ftab.findChildren('article', recursive=False)
 
     # Parsing start date from source html page
     start_datetime = start_datetime.replace(hour=9, minute=0, second=0,
@@ -83,11 +79,10 @@ def yandex(start_datetime, url):
         req_start_datetime=start_datetime
     )
 
-
     # Parsing weather parameters rows from source:
     # Temperature
     temp_row = ftab.find_all('div', class_='sc-e9667f21-0 gKfmfO')
-    temp_row = [t.div.get_text() for t in temp_row]
+    temp_row = [t.div.next_sibling for t in temp_row]
     # Conversion of the temperature of the form "+6...+8"
     # to the average value
     temp_row = [t.replace(chr(8722), '-').replace('°', '').split('...')
@@ -98,14 +93,11 @@ def yandex(start_datetime, url):
     # Pressure
     ftab = ftab.find_all('div', class_='sc-e9667f21-0 hJBgFV')
     press_row = [int(p.get_text()) for p in ftab[1::5]]
-    
-    w = [f.div.prev_sibling for f in ftab[3::5]]
-    pprint(w)
-    return
+
     # Wind velocity
-    wind_vel_row = ftab.find_all('span', class_="wind-speed")
-    wind_vel_row = [int(round(float(w.get_text().replace(',', '.')), 0))
-                    for w in wind_vel_row]
+    wind_vel_row = [w.contents[0].replace(',', '.') for w in ftab[3::5]]
+    wind_vel_row = [int(round(float(w), 0)) for w in wind_vel_row]
+
     # Merge parameters from source into one tuple
     raw_data = (temp_row, press_row, wind_vel_row)
 
@@ -224,7 +216,7 @@ def foreca(start_datetime, url: str):
 proxies = []
 
 
-def get_soup(url):
+def get_soup(url, archive_payload=False):
     """Scraping html content from source with the help of Selenium library"""
     global proxies
 
@@ -235,33 +227,35 @@ def get_soup(url):
 
     proxy = proxies[datetime.now().day % len(proxies)]
     proxy = f'https://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}'
-    # print(proxy)
-    # try:
 
-    response = requests.get(
-        url=url,
-        # url='https://yandex.ru/internet',
-        headers=headers,
-        # proxies=proxies,
-        proxies={'https': proxy},
-        timeout=10
-    )
+    if not archive_payload:
+        response = requests.get(
+            url=url,
+            # url='https://yandex.ru/internet',
+            headers=headers,
+            # proxies=proxies,
+            proxies={'https': proxy},
+            timeout=10
+        )
+
+    else:
+        headers['Referer'] = 'https://rp5.ru/'
+        response = requests.post(
+            url=url,
+            # cookies=cookies,
+            headers=headers,
+            data=archive_payload,
+            proxies={'https': proxy},
+            timeout=10
+        )
 
     src = response.text
-
-    # with open('soup.html', 'w') as file:
-    #     file.write(src)
-
     return BeautifulSoup(src, "lxml")
-
-    # except Exception:
-    #     print('Proxy ' + proxies[0] + ' deleted.')
-    #     del proxies[0]
 
 
 def get_proxies():
     """Scraping random proxy list"""
-    print('get_proxies called!!!')
+    # print('get_proxies called!!!')
     global proxies
     load_dotenv()
     proxies = os.environ["PROXIES"].split('\n')

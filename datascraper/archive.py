@@ -1,9 +1,8 @@
 # from selenium.webdriver.common.by import By
-from datascraper.forecasts import month_rusname_to_number
+from datascraper.forecasts import month_rusname_to_number, get_soup
 from datetime import datetime, timedelta
-from bs4 import BeautifulSoup
 import re
-import requests
+
 
 #############################
 # ARCHIVE SCRAPER FUNCTIONS #
@@ -20,31 +19,15 @@ def arch_rp5(start_datetime: datetime, url, end_datetime=None):
     else:
         step_option = '1'  # 1 day
 
-    headers = {
-        'Accept': '*/*',
-        'Referer': 'https://rp5.ru/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/\
-            537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-    }
+    payload = {'pe': step_option}
 
     # While cycle back to end_datetime.
     arch_data, date_ = [], start_datetime
     while date_ > end_datetime:
 
-        payload = {
-            'ArchDate': date_.strftime("%d.%m.%Y"),
-            'pe': step_option
-        }
+        payload['ArchDate'] = date_.strftime("%d.%m.%Y")
 
-        response = requests.post(
-            url=url,
-            # cookies=cookies,
-            headers=headers,
-            data=payload
-        )
-
-        src = response.text
-        soup = BeautifulSoup(src, "lxml")
+        soup = get_soup(url, payload)
         atab = soup.find('table', id='archiveTable')
 
         # Parsing start date from source html page

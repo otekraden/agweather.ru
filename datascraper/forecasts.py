@@ -368,6 +368,10 @@ def init_selenium_driver():
     options.add_argument('--no-sandbox')
     # disable shared memory usage
     options.add_argument('--disable-dev-shm-usage')
+    # start the browser window in maximized mode
+    options.add_argument('--start-maximized')
+    # disable extensions
+    # # options.add_argument('--disable-extensions')
 
     # proxy
     global proxies

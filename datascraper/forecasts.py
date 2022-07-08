@@ -226,7 +226,7 @@ def get_soup(url, archive_payload=False):
     headers = {'Accept': '*/*', 'User-Agent': UserAgent().random}
 
     proxy = proxies[datetime.now().day % len(proxies)]
-    proxy = f'https://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}'
+    proxy = f'http://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}'
 
     if not archive_payload:
         response = requests.get(
@@ -364,10 +364,6 @@ def init_selenium_driver():
     options.add_argument('--disable-blink-features=AutomationControlled')
     # disable pop-up blocking
     options.add_argument('--disable-popup-blocking')
-    # start the browser window in maximized mode
-    options.add_argument('--start-maximized')
-    # disable extensions
-    # # options.add_argument('--disable-extensions')
     # disable sandbox mode
     options.add_argument('--no-sandbox')
     # disable shared memory usage

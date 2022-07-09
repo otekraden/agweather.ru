@@ -8,4 +8,4 @@
 */10 * * * * dpath="/home/anton/agweather_venv/agweather.online/datascraper" && $dpath/../../bin/python $dpath/../manage.py run_archive_scraper >> $dpath/datascraper.log
 
 # EVERY HOUR SEND DUMP DB TO YANDEX DISK
-0 * * * * dpath="/home/anton/agweather_venv/agweather.online/datascraper" && $dpath/../../bin/python $dpath/../manage.py dumpdata > $dpath/dump_db.json && cd $dpath && zip dump_db.json.zip dump_db.json && rm $dpath/dump_db.json && $dpath/../../bin/python $dpath/../manage.py send_dump_db_to_yandex_disk >> $dpath/datascraper.log && rm $dpath/dump_db.json.zip
+40 * * * * dpath="/home/anton/agweather_venv/agweather.online/datascraper" && $dpath/../../bin/python $dpath/../manage.py dumpdata > $dpath/dump_db.json && zip $dpath/dump_db.json.zip $dpath/dump_db.json && rm $dpath/dump_db.json && $dpath/../../bin/python $dpath/../manage.py send_dump_db_to_yandex_disk >> $dpath/datascraper.log && rm $dpath/dump_db.json.zip

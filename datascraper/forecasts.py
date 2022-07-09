@@ -66,23 +66,26 @@ def yandex(start_datetime, url):
 
     # Scraping html content from source
     soup = get_soup_selenium(url)
-    ftab = soup.find('div', class_='sc-f83bbea-0 gyELnZ')
+    ftab = soup.find('main').find_all('div', recursive=False)[1]
+    ftab = ftab.find_all('article', recursive=False)
 
     # Parsing start date from source html page
     start_datetime = start_datetime.replace(hour=9, minute=0, second=0,
                                             microsecond=0)  # Morning
+    date_tags = ftab[0].find('p').find_all('span')
+
     start_date_from_source = func_start_date_from_source(
-        month=month_rusname_to_number(ftab.find(
-            'span', class_='sc-b1913d4b-3 fEuQBg').get_text()),
-        day=int(ftab.find(
-            'span', class_='sc-b1913d4b-1 ePbffO').get_text()),
+        month=month_rusname_to_number(date_tags[2].get_text()),
+        day=int(date_tags[0].get_text()),
         req_start_datetime=start_datetime
     )
 
+    ftab = [day.find_all('div', recursive=False)[:6*4] for day in ftab]
+    ftab = sum(ftab, [])
+
     # Parsing weather parameters rows from source:
     # Temperature
-    temp_row = ftab.find_all('div', class_='sc-e9667f21-0 gKfmfO')
-    temp_row = [t.div.next_sibling for t in temp_row]
+    temp_row = [t.div.next_sibling for t in ftab[::6]]
     # Conversion of the temperature of the form "+6...+8"
     # to the average value
     temp_row = [t.replace(chr(8722), '-').replace('°', '').split('...')
@@ -91,11 +94,10 @@ def yandex(start_datetime, url):
     temp_row = [int(round(sum(t)/len(t))) for t in temp_row]
 
     # Pressure
-    ftab = ftab.find_all('div', class_='sc-e9667f21-0 hJBgFV')
-    press_row = [int(p.get_text()) for p in ftab[1::5]]
+    press_row = [int(p.get_text()) for p in ftab[2::6]]
 
     # Wind velocity
-    wind_vel_row = [w.contents[0].replace(',', '.') for w in ftab[3::5]]
+    wind_vel_row = [w.contents[0].replace(',', '.') for w in ftab[4::6]]
     wind_vel_row = [int(round(float(w), 0)) for w in wind_vel_row]
 
     # Merge parameters from source into one tuple

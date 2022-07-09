@@ -1,0 +1,11 @@
+1) Create VPS with Django Ubuntu 20.04
+
+2) On VPS:
+ssh root@185.20.225.211
+uVP4#N+9Tn#N
+cd ../home/django/django_venv/src/
+
+rm -rf django_project/
+rm manage.py
+rm -rf static/
+

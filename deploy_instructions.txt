@@ -19,5 +19,14 @@ touch .env
 nano .env
 # insert data in .env
 
-# create database
-q
+# update db connection in setting.py
+Логин: django
+Пароль: chi7yieho3zo
+База: django_project_db
+
+
+python manage.py migrate
+
+python manage.py collectstatic
+
+sudo nano /etc/systemd/system/gunicorn.service

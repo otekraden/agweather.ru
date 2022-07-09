@@ -9,3 +9,15 @@ rm -rf django_project/
 rm manage.py
 rm -rf static/
 
+git clone https://github.com/venom812/agweather.online.git .
+
+source ../bin/activate
+
+pip install -r requirements.txt
+
+touch .env
+nano .env
+# insert data in .env
+
+# create database
+q

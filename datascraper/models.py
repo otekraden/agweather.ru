@@ -99,11 +99,27 @@ class ForecastTemplate(models.Model):
             for i in forecast_data_json:
                 print(i)
 
-            Forecast.objects.get_or_create(
+            Forecast.objects.update_or_create(
                 forecast_template=template,
                 start_forecast_datetime=start_forecast_datetime,
                 data_json=forecast_data_json,
                 defaults={'scraped_datetime': timezone.now()})
+
+    @classmethod
+    def get_outdated_last_records(cls):
+
+        outdated_last_records = []
+        for template in cls.objects.all():
+
+            last_record = Forecast.objects.filter(
+                forecast_template=template).latest('scraped_datetime')
+
+            if timezone.make_naive(last_record.scraped_datetime) + \
+                    timedelta(hours=1) < datetime.now():
+
+                outdated_last_records.append(last_record.forecast_template)
+
+        return outdated_last_records
 
     @staticmethod
     def start_forecast_datetime(timezone_info: zoneinfo,
@@ -133,10 +149,11 @@ class Forecast(models.Model):
     data_json = models.JSONField()
 
     def __str__(self):
-        return f"{self.forecast_template.forecast_source.name} >> \
-                {self.forecast_template.location.name} >> \
-                Scraped: {self.scraped_datetime.isoformat()} >> \
-                Start: {self.start_forecast_datetime.isoformat()}"
+        return "{0} >> {1}\nScraped: {2}\nStart: {3}".format(
+            self.forecast_template.forecast_source.name,
+            self.forecast_template.location.name,
+            self.scraped_datetime.isoformat(),
+            self.start_forecast_datetime.isoformat())
 
 
 ###################

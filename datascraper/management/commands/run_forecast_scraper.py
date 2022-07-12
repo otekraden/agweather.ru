@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        print(f"{datetime.now().isoformat(' ')} > Forecast scraper START")
+        print(f"{datetime.now().isoformat(' ')} > START Forecast scraper")
 
         forecast_source_id = kwargs['forecast_source_id']
 
@@ -25,4 +25,13 @@ class Command(BaseCommand):
         except Exception as e:
             print(e)
 
-        print(f"{datetime.now().isoformat(' ')} > Forecast scraper END")
+        print(f"{datetime.now().isoformat(' ')} > END    Forecast scraper")
+
+        outdated_report = ForecastTemplate.get_outdated_report()
+
+        if outdated_report:
+
+            outdated_report = f"{datetime.now().isoformat(' ')} > OUTDATED " \
+                f"Forecast data detected:\n{outdated_report}"
+
+            print(outdated_report)

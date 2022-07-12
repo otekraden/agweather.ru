@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from datascraper import forecasts, archive
 from backports import zoneinfo
+import collections
 
 ########
 # MISC #
@@ -106,9 +107,10 @@ class ForecastTemplate(models.Model):
                 defaults={'scraped_datetime': timezone.now()})
 
     @classmethod
-    def get_outdated_last_records(cls):
-
-        outdated_last_records = []
+    def get_outdated_report(cls):
+        # Getting a report on forecast sources
+        # whose data is more than an hour out of date
+        report = []
         for template in cls.objects.all():
 
             last_record = Forecast.objects.filter(
@@ -117,9 +119,18 @@ class ForecastTemplate(models.Model):
             if timezone.make_naive(last_record.scraped_datetime) + \
                     timedelta(hours=1) < datetime.now():
 
-                outdated_last_records.append(last_record.forecast_template)
+                report.append(
+                    last_record.forecast_template.forecast_source)
 
-        return outdated_last_records
+        if report:
+            report = [
+                ((i[0].name+':').ljust(15),
+                 i[1],
+                 ForecastTemplate.objects.filter(forecast_source=i[0]).count())
+                for i in collections.Counter(report).items()]
+            report = '\n'.join([f"{i[0]} {i[1]}/{i[2]} locs" for i in report])
+
+            return report
 
     @staticmethod
     def start_forecast_datetime(timezone_info: zoneinfo,

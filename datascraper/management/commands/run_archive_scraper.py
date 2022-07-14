@@ -1,15 +1,16 @@
 from django.core.management.base import BaseCommand
 from datascraper.models import ArchiveTemplate
-from datetime import datetime
+from datascraper.logging import init_logger
 
 
 class Command(BaseCommand):
     help = 'Run archive scraper.'
 
     def handle(self, *args, **kwargs):
+        logger = init_logger('Archive scraper')
 
-        print(f"{datetime.now().isoformat(' ')} > Archive scraper START")
+        logger.info("> START")
 
-        ArchiveTemplate.scrap_archive()
+        ArchiveTemplate.scrap_archive(logger)
 
-        print(f"{datetime.now().isoformat(' ')} > Archive scraper END")
+        logger.info("> END")

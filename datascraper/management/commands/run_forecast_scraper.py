@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from datascraper.models import ForecastTemplate, ForecastSource
-from datetime import datetime
+from datascraper.logging import init_logger
 
 
 class Command(BaseCommand):
@@ -10,28 +10,28 @@ class Command(BaseCommand):
         parser.add_argument('forecast_source_id')
 
     def handle(self, *args, **kwargs):
+        logger = init_logger('Forecast scraper')
 
-        print(f"{datetime.now().isoformat(' ')} > START Forecast scraper")
+        logger.info("> START")
 
         forecast_source_id = kwargs['forecast_source_id']
 
         try:
             if forecast_source_id == 'all':
-                ForecastTemplate.scrap_forecasts()
+                ForecastTemplate.scrap_forecasts(logger)
             else:
                 ForecastSource.objects.get(id=forecast_source_id)
-                ForecastTemplate.scrap_forecasts(forecast_source_id)
+                ForecastTemplate.scrap_forecasts(logger, forecast_source_id)
 
         except Exception as e:
-            print(e)
+            logger.error(e)
 
-        print(f"{datetime.now().isoformat(' ')} > END    Forecast scraper")
+        logger.info("> END")
 
         outdated_report = ForecastTemplate.get_outdated_report()
 
         if outdated_report:
 
-            outdated_report = f"{datetime.now().isoformat(' ')} > OUTDATED " \
-                f"Forecast data detected:\n{outdated_report}"
+            outdated_report = f"> OUTDATED data detected:\n{outdated_report}"
 
-            print(outdated_report)
+            logger.critical(outdated_report)

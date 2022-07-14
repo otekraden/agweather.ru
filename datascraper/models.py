@@ -33,10 +33,10 @@ class WeatherParameter(models.Model):
     def __str__(self):
         return self.var_name
 
-
 ####################
 # FORECASTS MODELS #
 ####################
+
 
 class ForecastSource(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
@@ -61,7 +61,7 @@ class ForecastTemplate(models.Model):
         return f"{self.location} >> {self.forecast_source}"
 
     @classmethod
-    def scrap_forecasts(cls, forecast_source_id=None):
+    def scrap_forecasts(cls, logger, forecast_source_id=None):
 
         if forecast_source_id:
             templates = cls.objects.filter(
@@ -70,7 +70,8 @@ class ForecastTemplate(models.Model):
             templates = cls.objects.all()
 
         for template in templates:
-            print(f"Scraping forecast: {template}")
+            # print(f"Scraping forecast: {template}")
+            logger.debug(template)
 
             # Getting local datetime at forecast location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
@@ -80,7 +81,7 @@ class ForecastTemplate(models.Model):
             start_forecast_datetime = ForecastTemplate.start_forecast_datetime(
                 timezone_info, local_datetime)
 
-            # print(start_forecast_datetime)
+            logger.debug(start_forecast_datetime)
 
             # Full pass to forecast source
             forecast_url = template.forecast_source.url + \
@@ -92,13 +93,12 @@ class ForecastTemplate(models.Model):
                 forecast_data_json = scraper_func(
                     start_forecast_datetime, forecast_url)
             except Exception as _ex:
-                print("{0} > FAILED to scrap FORECAST data for {1}:".
-                      format(datetime.now().isoformat(' '), template))
-                print(_ex)
+
+                logger.error(f"{template}: {_ex}")
                 continue
 
-            for i in forecast_data_json:
-                print(i)
+            logger.debug("Scraped data >\n"+'\n'.join([
+                str(d) for d in forecast_data_json]))
 
             Forecast.objects.update_or_create(
                 forecast_template=template,
@@ -194,11 +194,12 @@ class ArchiveTemplate(models.Model):
         return f"{self.location} >> {self.archive_source}"
 
     @classmethod
-    def scrap_archive(cls):
+    def scrap_archive(cls, logger):
         templates = cls.objects.all()
 
         for template in templates:
             # print(f"Scraping archive: {template}")
+            logger.debug(template)
 
             # Getting local datetime at archive location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
@@ -224,9 +225,9 @@ class ArchiveTemplate(models.Model):
                 archive_data = archive.arch_rp5(
                     start_archive_datetime, archive_url, last_record_datetime)
             except Exception as _ex:
-                print("{0} > FAILED to scrap ARCHIVE data for {1}:".
-                      format(datetime.now().isoformat(' '), template))
-                print(_ex)
+
+                logger.error(f"{template}: {_ex}")
+
                 continue
 
             for record in archive_data:

@@ -117,5 +117,5 @@ _training/
 datascraper/forecasts_old.py
 _dump/
 proxies_extension.zip
-dump_db.json
-dump_db.json.zip
+*dump_db.json
+*dump_db.json.zip

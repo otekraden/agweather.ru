@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 import time
 import re
 import requests
-import os
-from dotenv import load_dotenv
+# import os
+# from dotenv import load_dotenv
 from fake_useragent import UserAgent
 # from pprint import pprint
 from selenium import webdriver
@@ -13,6 +13,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium_stealth import stealth
 # from random import choice
 import zipfile
+from datascraper.proxy import set_proxy
 
 
 ######################################
@@ -214,30 +215,37 @@ def foreca(start_datetime, url: str):
 # MISC #
 ########
 
-# list of random proxies
-proxies = []
+# # list of random proxies
+# proxies = []
 
 
 def get_soup(url, archive_payload=False):
     """Scraping html content from source with the help of Selenium library"""
-    global proxies
+    # global proxies
 
-    if not proxies:
-        get_proxies()
+    # if not proxies:
+    #     get_proxies()
 
     headers = {'Accept': '*/*', 'User-Agent': UserAgent().random}
 
-    proxy = proxies[datetime.now().day % len(proxies)]
-    proxy = f'http://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}'
+    proxy = set_proxy()
+    if proxy:
+        proxy = f'http://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}'
+        proxies = {'https': proxy}
+    else:
+        proxies = None
+    # print(proxy)
 
     if not archive_payload:
         response = requests.get(
             url=url,
             # url='https://yandex.ru/internet',
             headers=headers,
-            # proxies=proxies,
-            proxies={'https': proxy},
-            timeout=10
+            proxies=proxies,
+            # proxies={'https': proxy},
+            # proxies=None,
+            timeout=10,
+
         )
 
     else:
@@ -255,13 +263,13 @@ def get_soup(url, archive_payload=False):
     return BeautifulSoup(src, "lxml")
 
 
-def get_proxies():
-    """Scraping random proxy list"""
-    # print('get_proxies called!!!')
-    global proxies
-    load_dotenv()
-    proxies = os.environ["PROXIES"].split('\n')
-    proxies = [p.split(':') for p in proxies]
+# def get_proxies():
+#     """Scraping random proxy list"""
+#     # print('get_proxies called!!!')
+#     global proxies
+#     load_dotenv()
+#     proxies = os.environ["PROXIES"].split('\n')
+#     proxies = [p.split(':') for p in proxies]
 
 
 def func_start_date_from_source(month, day, req_start_datetime):
@@ -375,14 +383,16 @@ def init_selenium_driver():
     # disable extensions
     # # options.add_argument('--disable-extensions')
 
-    # proxy
-    global proxies
-    if not proxies:
-        get_proxies()
-    proxy = proxies[datetime.now().day % len(proxies)-4]
-
-    proxies_extension = selenium_proxy(proxy[2], proxy[3], proxy[0], proxy[1])
-    options.add_extension(proxies_extension)
+    # # proxy
+    # global proxies
+    # if not proxies:
+    #     get_proxies()
+    proxy = set_proxy()
+    if proxy:
+        proxies_extension = selenium_proxy(
+            proxy[2], proxy[3], proxy[0], proxy[1])
+        options.add_extension(proxies_extension)
+    # print(proxy)
 
     # Waits for page to be interactive
     options.page_load_strategy = 'eager'

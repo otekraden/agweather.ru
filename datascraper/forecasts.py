@@ -343,19 +343,24 @@ def json_data_gen(start_datetime, start_date_from_source,
 # SELENIUM #
 ############
 
+driver = None
+
 
 def get_soup_selenium(url):
     """Scraping html content from source with the help of Selenium library"""
+    global driver
 
-    driver = init_selenium_driver()
+    if not driver:
+        print("Selen init!!!")
+        driver = init_selenium_driver()
 
     driver.get(url=url)
     # driver.get(url='https://yandex.ru/internet')
     time.sleep(1)
     src = driver.page_source
 
-    driver.close()
-    driver.quit()
+    # driver.close()
+    # driver.quit()
 
     return BeautifulSoup(src, "lxml")
 

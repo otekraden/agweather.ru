@@ -105,7 +105,7 @@ class ForecastTemplate(models.Model):
                 start_forecast_datetime=start_forecast_datetime,
                 data_json=forecast_data_json,
                 defaults={'scraped_datetime': timezone.now()})
-        
+
         # Closing Selenium driver
         forecasts.driver.close()
         forecasts.driver.quit()

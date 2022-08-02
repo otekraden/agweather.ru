@@ -14,6 +14,7 @@ from selenium_stealth import stealth
 # from random import choice
 import zipfile
 from datascraper.proxy import set_proxy
+from datascraper.logging import init_logger
 
 
 ######################################
@@ -351,7 +352,9 @@ def get_soup_selenium(url):
     global driver
 
     if not driver:
-        print("Selen init!!!")
+        logger = init_logger('Selenium')
+        logger.info("> Driver initialization")
+
         driver = init_selenium_driver()
 
     driver.get(url=url)

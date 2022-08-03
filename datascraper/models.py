@@ -4,10 +4,14 @@ from django.utils import timezone
 from datascraper import forecasts, archive
 from backports import zoneinfo
 import collections
+from datascraper.logging import init_logger
 
 ########
 # MISC #
 ########
+
+f_logger = init_logger('Forecast scraper')
+a_logger = init_logger('Archive scraper')
 
 
 class Location(models.Model):
@@ -61,7 +65,9 @@ class ForecastTemplate(models.Model):
         return f"{self.location} >> {self.forecast_source}"
 
     @classmethod
-    def scrap_forecasts(cls, logger, forecast_source_id=None):
+    def scrap_forecasts(cls, forecast_source_id=None):
+
+        global f_logger
 
         if forecast_source_id:
             templates = cls.objects.filter(
@@ -71,7 +77,7 @@ class ForecastTemplate(models.Model):
 
         for template in templates:
             # print(f"Scraping forecast: {template}")
-            logger.debug(template)
+            f_logger.debug(template)
 
             # Getting local datetime at forecast location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
@@ -81,7 +87,7 @@ class ForecastTemplate(models.Model):
             start_forecast_datetime = ForecastTemplate.start_forecast_datetime(
                 timezone_info, local_datetime)
 
-            logger.debug(start_forecast_datetime)
+            f_logger.debug(start_forecast_datetime)
 
             # Full pass to forecast source
             forecast_url = template.forecast_source.url + \
@@ -94,10 +100,10 @@ class ForecastTemplate(models.Model):
                     start_forecast_datetime, forecast_url)
             except Exception as _ex:
 
-                logger.error(f"{template}: {_ex}")
+                f_logger.error(f"{template}: {_ex}")
                 continue
 
-            logger.debug("Scraped data >\n"+'\n'.join([
+            f_logger.debug("Scraped data >\n"+'\n'.join([
                 str(d) for d in forecast_data_json]))
 
             Forecast.objects.update_or_create(
@@ -198,12 +204,15 @@ class ArchiveTemplate(models.Model):
         return f"{self.location} >> {self.archive_source}"
 
     @classmethod
-    def scrap_archive(cls, logger):
+    def scrap_archive(cls):
+
+        global a_logger
+
         templates = cls.objects.all()
 
         for template in templates:
             # print(f"Scraping archive: {template}")
-            logger.debug(template)
+            a_logger.debug(template)
 
             # Getting local datetime at archive location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
@@ -230,7 +239,7 @@ class ArchiveTemplate(models.Model):
                     start_archive_datetime, archive_url, last_record_datetime)
             except Exception as _ex:
 
-                logger.error(f"{template}: {_ex}")
+                a_logger.error(f"{template}: {_ex}")
 
                 continue
 

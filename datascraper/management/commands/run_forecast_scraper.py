@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
-from datascraper.models import ForecastTemplate, ForecastSource
-from datascraper.logging import init_logger
+from datascraper.models import ForecastTemplate, ForecastSource, f_logger as logger
+# from datascraper.logging import init_logger
 
 
 class Command(BaseCommand):
@@ -10,7 +10,7 @@ class Command(BaseCommand):
         parser.add_argument('forecast_source_id')
 
     def handle(self, *args, **kwargs):
-        logger = init_logger('Forecast scraper')
+        # logger = init_logger('Forecast scraper')
 
         logger.info("> START")
 
@@ -18,10 +18,10 @@ class Command(BaseCommand):
 
         try:
             if forecast_source_id == 'all':
-                ForecastTemplate.scrap_forecasts(logger)
+                ForecastTemplate.scrap_forecasts()
             else:
                 ForecastSource.objects.get(id=forecast_source_id)
-                ForecastTemplate.scrap_forecasts(logger, forecast_source_id)
+                ForecastTemplate.scrap_forecasts(forecast_source_id)
 
         except Exception as e:
             logger.error(e)

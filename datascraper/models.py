@@ -10,8 +10,8 @@ from datascraper.logging import init_logger
 # MISC #
 ########
 
-f_logger = init_logger('Forecast scraper')
-a_logger = init_logger('Archive scraper')
+F_LOGGER = init_logger('Forecast scraper')
+A_LOGGER = init_logger('Archive scraper')
 
 
 class Location(models.Model):
@@ -37,9 +37,9 @@ class WeatherParameter(models.Model):
     def __str__(self):
         return self.var_name
 
-####################
-# FORECASTS MODELS #
-####################
+###################
+# FORECAST MODELS #
+###################
 
 
 class ForecastSource(models.Model):
@@ -62,12 +62,10 @@ class ForecastTemplate(models.Model):
         ordering = ['location', 'forecast_source']
 
     def __str__(self):
-        return f"{self.location} >> {self.forecast_source}"
+        return f"{self.forecast_source} --> {self.location}"
 
     @classmethod
     def scrap_forecasts(cls, forecast_source_id=None):
-
-        global f_logger
 
         if forecast_source_id:
             templates = cls.objects.filter(
@@ -77,7 +75,7 @@ class ForecastTemplate(models.Model):
 
         for template in templates:
             # print(f"Scraping forecast: {template}")
-            f_logger.debug(template)
+            F_LOGGER.debug(template)
 
             # Getting local datetime at forecast location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
@@ -87,7 +85,7 @@ class ForecastTemplate(models.Model):
             start_forecast_datetime = ForecastTemplate.start_forecast_datetime(
                 timezone_info, local_datetime)
 
-            f_logger.debug(start_forecast_datetime)
+            F_LOGGER.debug(start_forecast_datetime)
 
             # Full pass to forecast source
             forecast_url = template.forecast_source.url + \
@@ -100,10 +98,10 @@ class ForecastTemplate(models.Model):
                     start_forecast_datetime, forecast_url)
             except Exception as _ex:
 
-                f_logger.error(f"{template}: {_ex}")
+                F_LOGGER.error(f"{template}: {_ex}")
                 continue
 
-            f_logger.debug("Scraped data >\n"+'\n'.join([
+            F_LOGGER.debug("Scraped data >\n"+'\n'.join([
                 str(d) for d in forecast_data_json]))
 
             Forecast.objects.update_or_create(
@@ -170,16 +168,14 @@ class Forecast(models.Model):
     data_json = models.JSONField()
 
     def __str__(self):
-        return "{0} >> {1}\nScraped: {2}\nStart: {3}".format(
-            self.forecast_template.forecast_source.name,
-            self.forecast_template.location.name,
-            self.scraped_datetime.isoformat(),
-            self.start_forecast_datetime.isoformat())
+        return f"{self.forecast_template.forecast_source} --> \
+            {self.forecast_template.location}"
 
 
-###################
-# ARCHIVES MODELS #
-###################
+##################
+# ARCHIVE MODELS #
+##################
+
 
 class ArchiveSource(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
@@ -201,18 +197,16 @@ class ArchiveTemplate(models.Model):
         ordering = ['location', 'archive_source']
 
     def __str__(self):
-        return f"{self.location} >> {self.archive_source}"
+        return f"{self.archive_source} --> {self.location}"
 
     @classmethod
     def scrap_archive(cls):
-
-        global a_logger
 
         templates = cls.objects.all()
 
         for template in templates:
             # print(f"Scraping archive: {template}")
-            a_logger.debug(template)
+            A_LOGGER.debug(template)
 
             # Getting local datetime at archive location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
@@ -239,7 +233,7 @@ class ArchiveTemplate(models.Model):
                     start_archive_datetime, archive_url, last_record_datetime)
             except Exception as _ex:
 
-                a_logger.error(f"{template}: {_ex}")
+                A_LOGGER.error(f"{template}: {_ex}")
 
                 continue
 
@@ -261,7 +255,6 @@ class Archive(models.Model):
 
     class Meta:
         ordering = ['archive_template', 'record_datetime']
-        # unique_together = ['archive_template', 'record_datetime']
         index_together = ['archive_template', 'record_datetime']
 
     def __str__(self):

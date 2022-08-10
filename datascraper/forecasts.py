@@ -16,6 +16,8 @@ import zipfile
 from datascraper.proxy import set_proxy
 from datascraper.logging import init_logger
 
+DATETIME_STEP = timedelta(hours=6)
+
 
 ######################################
 # FORECAST SOURCES SCRAPER FUNCTIONS #
@@ -312,11 +314,11 @@ def json_data_gen(start_datetime, start_date_from_source,
 
     # Generating json record
     data_json, datetime_ = [[] for i in raw_data], start_datetime
-    datetime_step = timedelta(hours=6)
+    # datetime_step = timedelta(hours=6)
     # index = 0
     while datetime_ <= datetime_row_from_source[-1]:
         for i, dt in enumerate(datetime_row_from_source):
-            if (i == 0 and datetime_ < dt) or dt - datetime_ >= datetime_step:
+            if (i == 0 and datetime_ < dt) or dt - datetime_ >= DATETIME_STEP:
                 [data_json[p].append(None) for p in range(len(raw_data))]
             elif datetime_ == dt:
                 [data_json[j].append(p[i]) for j, p in enumerate(raw_data)]
@@ -335,7 +337,7 @@ def json_data_gen(start_datetime, start_date_from_source,
                 del raw_data[p][:i]
             break
 
-        datetime_ += datetime_step
+        datetime_ += DATETIME_STEP
 
     return data_json
 

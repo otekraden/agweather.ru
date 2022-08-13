@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'datascraper.apps.DatascraperConfig',
+    'django_admin_inline_paginator',
 ]
 
 MIDDLEWARE = [

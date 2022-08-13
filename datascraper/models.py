@@ -258,6 +258,6 @@ class Archive(models.Model):
         index_together = ['archive_template', 'record_datetime']
 
     def __str__(self):
-        return f"{self.archive_template.archive_source.name} >> \
-            {self.archive_template.location.name} >> \
-            Scraped: {self.scraped_datetime.isoformat()}"
+        return ""
+        # return f"{self.archive_template.archive_source} --> \
+        #     {self.archive_template.location.name}"

@@ -249,7 +249,7 @@ class ArchiveTemplate(models.Model):
 class Archive(models.Model):
     archive_template = models.ForeignKey(
         ArchiveTemplate, on_delete=models.PROTECT)
-    scraped_datetime = models.DateTimeField(default=datetime.now())
+    scraped_datetime = models.DateTimeField() # default=datetime.now()
     record_datetime = models.DateTimeField(default=None)
     data_json = models.JSONField()
 

@@ -2,8 +2,8 @@ from django.core.management.base import BaseCommand
 import yadisk
 from dotenv import load_dotenv
 import os
-import zipfile
 from datascraper.logging import init_logger
+from django.core import management
 
 
 class Command(BaseCommand):
@@ -22,12 +22,11 @@ class Command(BaseCommand):
         logger.debug(f'Last dump file detected: {last_dump_file_name}')
         last_dump_file.download(last_dump_file_name)
 
-        with zipfile.ZipFile(last_dump_file_name, 'r') as myzip:
-            myzip.extractall('')
+        # with zipfile.ZipFile(last_dump_file_name, 'r') as myzip:
+        #     myzip.extractall('')
 
+        management.call_command("loaddata", last_dump_file_name, verbosity=0)
         os.remove(last_dump_file_name)
-        last_dump_file_name = last_dump_file_name.rstrip('.zip')
-        logger.debug(last_dump_file_name)
-        # os.remove(f'{filename}.zip')
 
+        logger.debug("Data successfully loaded from dump file.")
         logger.info("> END")

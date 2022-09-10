@@ -8,8 +8,9 @@ import requests
 from fake_useragent import UserAgent
 # from pprint import pprint
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.chrome.service import Service as ChromeService
+# from webdriver_manager.chrome import ChromeDriverManager
 from selenium_stealth import stealth
 # from random import choice
 import zipfile
@@ -374,10 +375,11 @@ def init_selenium_driver():
     """Selenium driver initialization"""
 
     # create a new Service instance and specify path to Chromedriver executable
-    service = ChromeService(executable_path=ChromeDriverManager().install())
+    # service = ChromeService(executable_path=ChromeDriverManager().install())
 
     # create a ChromeOptions object
-    options = webdriver.ChromeOptions()
+    # options = webdriver.ChromeOptions()
+    options = Options()
     # run in headless mode
     options.add_argument("--headless=new")
     # disable the AutomationControlled feature of Blink rendering engine
@@ -408,7 +410,7 @@ def init_selenium_driver():
     options.page_load_strategy = 'eager'
 
     # create a driver instance
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(options=options)
     # Change the property value of the navigator for webdriver to undefined
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', \
                           {get: () => undefined})")

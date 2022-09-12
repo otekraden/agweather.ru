@@ -69,14 +69,13 @@ def rp5(start_datetime, url):
 
 def yandex(start_datetime, url):
 
+    print(f'{start_datetime}******')
     # Scraping html content from source
     soup = get_soup_selenium(url)
     ftab = soup.find('main').find_all('div', recursive=False)[1]
     ftab = ftab.find_all('article', recursive=False)
 
     # Parsing start date from source html page
-    start_datetime = start_datetime.replace(hour=9, minute=0, second=0,
-                                            microsecond=0)  # Morning
     date_tags = ftab[0].find('p').find_all('span')
 
     start_date_from_source = func_start_date_from_source(
@@ -108,8 +107,15 @@ def yandex(start_datetime, url):
     # Merge parameters from source into one tuple
     raw_data = (temp_row, press_row, wind_vel_row)
 
+    # for i in raw_data:
+    #     print(i)
+
     # Parsing time row from source
     time_row = [9, 15, 21, 3]*(len(temp_row)//4)
+
+    print(time_row)
+    print(start_datetime)
+    print(start_date_from_source)
 
     return json_data_gen(
         start_datetime, start_date_from_source, time_row, raw_data)
@@ -122,7 +128,6 @@ def meteoinfo(start_datetime, url):
     ftab = soup.find('div', class_='hidden-desktop')
 
     # Parsing start date from source html page
-    start_datetime = start_datetime.replace(minute=0, second=0, microsecond=0)
     start_date_from_source = ftab.find('nobr')
     start_hour = start_date_from_source.parent.next_sibling.get_text()
     start_hour = 15 if start_hour.strip().lower() == 'день' else 3

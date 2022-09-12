@@ -83,7 +83,7 @@ class ForecastTemplate(models.Model):
 
             # Calculating start forecast datetime
             start_forecast_datetime = ForecastTemplate.start_forecast_datetime(
-                timezone_info, local_datetime)
+                local_datetime)
 
             F_LOGGER.debug(start_forecast_datetime)
 
@@ -141,8 +141,7 @@ class ForecastTemplate(models.Model):
             return report
 
     @staticmethod
-    def start_forecast_datetime(timezone_info: zoneinfo,
-                                local_datetime: datetime):
+    def start_forecast_datetime(local_datetime: datetime):
         # Calculating start forecast datetime
         # Local start time can be only 3:00, 9:00, 15:00 or 21:00:
         # night, morning, afternoon, evening.
@@ -166,6 +165,9 @@ class Forecast(models.Model):
     scraped_datetime = models.DateTimeField()
     start_forecast_datetime = models.DateTimeField()
     data_json = models.JSONField()
+
+    def is_actual(self):
+        return self.scraped_datetime >= timezone.now() - timedelta(hours=1)
 
     def __str__(self):
         return f"{self.forecast_template.forecast_source} --> \
@@ -214,7 +216,7 @@ class ArchiveTemplate(models.Model):
 
             # Calculating start archive datetime
             start_archive_datetime = ForecastTemplate.start_forecast_datetime(
-                timezone_info, local_datetime) - timedelta(hours=6)
+                local_datetime) - timedelta(hours=6)
 
             # Full pass to archive source
             archive_url = template.archive_source.url + \
@@ -249,7 +251,7 @@ class ArchiveTemplate(models.Model):
 class Archive(models.Model):
     archive_template = models.ForeignKey(
         ArchiveTemplate, on_delete=models.PROTECT)
-    scraped_datetime = models.DateTimeField() # default=datetime.now()
+    scraped_datetime = models.DateTimeField()  # default=datetime.now()
     record_datetime = models.DateTimeField(default=None)
     data_json = models.JSONField()
 

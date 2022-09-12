@@ -1,0 +1,56 @@
+{% extends "website/base.html" %}
+
+<!-- Begin Page Content -->
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4" style="margin-bottom: 0 !important;">
+        <form id="form" class="p-3" action='' method="POST">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group col-md-6 mb-2">
+                    <label for="location">Forecast location:</label>
+                        <select class="form-control" id="location" name="location"
+                            value="{{ location }}" onchange="submit();">
+                            {% for loc in locations %}
+                            <option value="{{ loc }}" {% if location == loc %}selected{% endif %}>{{ loc }}</option>
+                            {% endfor %}
+                        </select>
+                </div>
+                <div class="form-group col-md-3 mb-0">
+                    <label for="weather_parameter">Weather parameter:</label>
+                        <select class="form-control" id="weather_parameter" name="weather_parameter"
+                            value="{{ weather_parameter }}" onchange="submit();">
+                            {% for par in weather_parameters %}
+                            <option value="{{ par }}" {% if weather_parameter == par %}selected{% endif %}>{{ par }}</option>
+                            {% endfor %}
+                        </select>
+                </div>
+                <div class="form-group col-md-3 mb-0">
+                    <label for="forecast_length">Forecast period, days:</label>
+                    <input id='forecast_length' type="number" min="1" max="14" class="form-control"
+                        placeholder="Insert number of days" {% if forecast_length %} value="{{ forecast_length }}" 
+                        {% endif %} name="forecast_length" onchange="submit();">
+                </div>
+            </div>
+
+        </form>
+        <!-- <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a> -->
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Area Chart -->
+        <div class="chart-area" id="my_chart_area">
+            <canvas id="myAreaChart"></canvas>
+            <script>
+                forecastChart({{ chartjs_data| safe }}, {{ chartjs_options| safe }});
+            </script>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

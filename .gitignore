@@ -119,3 +119,5 @@ _dump/
 proxies_extension.zip
 *dump_db.json
 *dump_db.json.zip
+
+static/

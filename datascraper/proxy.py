@@ -4,31 +4,29 @@ from datetime import datetime
 from random import choice
 from datascraper.logging import init_logger
 
-# 0: no use proxy,
-# 1: every day next from list,
-# 2: random choice from list
 PROXY_MODE = 0
-
-proxies = []
+PROXIES = []
 
 
 def set_proxy():
-    
+
     global PROXY_MODE
+    global PROXIES
 
     logger = init_logger('Proxy setter')
 
-    global proxies
-    if not proxies:
-        logger.debug("Proxies list red from .env file")
-        logger.debug(f"Proxy mode is {PROXY_MODE}")
+    if not PROXIES:
         load_dotenv()
-        proxies = os.environ["PROXIES"].split('\n')
-        proxies = [p.split(':') for p in proxies]
+        PROXIES = os.environ["PROXIES"].split('\n')
+        PROXIES = [p.split(':') for p in PROXIES]
+        logger.debug("Proxies list red from .env file")
+
+        PROXY_MODE = int(os.environ["PROXY_MODE"])
+        logger.debug(f"Proxy mode red from .env file: {PROXY_MODE}")
 
     if PROXY_MODE == 0:
         return None
     elif PROXY_MODE == 1:
-        return proxies[datetime.now().day % len(proxies)]
+        return PROXIES[datetime.now().day % len(PROXIES)]
     elif PROXY_MODE == 2:
-        return choice(proxies)
+        return choice(PROXIES)

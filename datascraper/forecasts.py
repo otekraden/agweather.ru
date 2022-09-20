@@ -69,10 +69,16 @@ def rp5(start_datetime, url):
 
 def yandex(start_datetime, url):
 
-    print(f'{start_datetime}******')
     # Scraping html content from source
-    soup = get_soup_selenium(url)
-    ftab = soup.find('main').find_all('div', recursive=False)[1]
+    def get_ftab():
+        soup = get_soup_selenium(url)
+        return soup.find('main').find_all('div', recursive=False)[1]
+
+    try:
+        ftab = get_ftab()
+    except AttributeError:
+        ftab = get_ftab()
+
     ftab = ftab.find_all('article', recursive=False)
 
     # Parsing start date from source html page
@@ -107,15 +113,8 @@ def yandex(start_datetime, url):
     # Merge parameters from source into one tuple
     raw_data = (temp_row, press_row, wind_vel_row)
 
-    # for i in raw_data:
-    #     print(i)
-
     # Parsing time row from source
     time_row = [9, 15, 21, 3]*(len(temp_row)//4)
-
-    print(time_row)
-    print(start_datetime)
-    print(start_date_from_source)
 
     return json_data_gen(
         start_datetime, start_date_from_source, time_row, raw_data)
@@ -366,7 +365,6 @@ def get_soup_selenium(url):
         driver = init_selenium_driver()
 
     driver.get(url=url)
-    # driver.get(url='https://yandex.ru/internet')
     time.sleep(1)
     src = driver.page_source
 

@@ -60,11 +60,8 @@ def rp5(start_datetime, url):
     wind_vel_row = wind_vel_row.parent.parent.find_all('td')[1:-1]
     wind_vel_row = [w.find('div', class_='wv_0') for w in wind_vel_row]
     wind_vel_row = [int(w.get_text()) if w else 0 for w in wind_vel_row]
-    # Merge parameters from source into one tuple
-    raw_data = (temp_row, press_row, wind_vel_row)
 
-    return json_data_gen(
-        start_datetime, start_date_from_source, time_row, raw_data)
+    return time_row, (temp_row, press_row, wind_vel_row)
 
 
 def yandex(start_datetime, url):
@@ -110,14 +107,10 @@ def yandex(start_datetime, url):
     wind_vel_row = [w.contents[0].replace(',', '.') for w in ftab[4::6]]
     wind_vel_row = [int(round(float(w), 0)) for w in wind_vel_row]
 
-    # Merge parameters from source into one tuple
-    raw_data = (temp_row, press_row, wind_vel_row)
-
     # Parsing time row from source
     time_row = [9, 15, 21, 3]*(len(temp_row)//4)
 
-    return json_data_gen(
-        start_datetime, start_date_from_source, time_row, raw_data)
+    return time_row, temp_row, press_row, wind_vel_row
 
 
 def meteoinfo(start_datetime, url):
@@ -299,52 +292,60 @@ def month_rusname_to_number(name):
         return 5
     return month_tuple.index(name)
 
+def func_gen_datetime_row(start_date, time_row):
 
-def intp_linear(xa, xc, xb, ya, yb):
-    """Linear interpolation."""
-    return round((xc-xa)/(xb-xa)*(yb-ya)+ya)
+    datetime_row = []
+     
 
 
-def json_data_gen(start_datetime, start_date_from_source,
-                  time_row_from_source, raw_data):
-    """Recalculating forecast data from source datetime row to required row."""
 
-    # Generating datetime row from html source
-    datetime_row_from_source = []
-    for i, hour in enumerate(time_row_from_source):
-        if i != 0 and hour < time_row_from_source[i-1]:
-            start_date_from_source += timedelta(days=1)
-        datetime_row_from_source.append(start_date_from_source
-                                        + timedelta(hours=hour))
 
-    # Generating json record
-    data_json, datetime_ = [[] for i in raw_data], start_datetime
-    # datetime_step = timedelta(hours=6)
-    # index = 0
-    while datetime_ <= datetime_row_from_source[-1]:
-        for i, dt in enumerate(datetime_row_from_source):
-            if (i == 0 and datetime_ < dt) or dt - datetime_ >= DATETIME_STEP:
-                [data_json[p].append(None) for p in range(len(raw_data))]
-            elif datetime_ == dt:
-                [data_json[j].append(p[i]) for j, p in enumerate(raw_data)]
-            elif datetime_ < dt:
-                [data_json[j].append(intp_linear(
-                    datetime_row_from_source[i-1].timestamp(),
-                    datetime_.timestamp(),
-                    dt.timestamp(),
-                    p[i-1],
-                    p[i])) for j, p in enumerate(raw_data)]
-            else:
-                continue
 
-            del datetime_row_from_source[:i]
-            for p in range(len(raw_data)):
-                del raw_data[p][:i]
-            break
+# def intp_linear(xa, xc, xb, ya, yb):
+#     """Linear interpolation."""
+#     return round((xc-xa)/(xb-xa)*(yb-ya)+ya)
 
-        datetime_ += DATETIME_STEP
 
-    return data_json
+# def json_data_gen(start_datetime, start_date_from_source,
+#                   time_row_from_source, raw_data):
+#     """Recalculating forecast data from source datetime row to required row."""
+
+#     # Generating datetime row from html source
+#     datetime_row_from_source = []
+#     for i, hour in enumerate(time_row_from_source):
+#         if i != 0 and hour < time_row_from_source[i-1]:
+#             start_date_from_source += timedelta(days=1)
+#         datetime_row_from_source.append(start_date_from_source
+#                                         + timedelta(hours=hour))
+
+#     # Generating json record
+#     data_json, datetime_ = [[] for i in raw_data], start_datetime
+#     # datetime_step = timedelta(hours=6)
+#     # index = 0
+#     while datetime_ <= datetime_row_from_source[-1]:
+#         for i, dt in enumerate(datetime_row_from_source):
+#             if (i == 0 and datetime_ < dt) or dt - datetime_ >= DATETIME_STEP:
+#                 [data_json[p].append(None) for p in range(len(raw_data))]
+#             elif datetime_ == dt:
+#                 [data_json[j].append(p[i]) for j, p in enumerate(raw_data)]
+#             elif datetime_ < dt:
+#                 [data_json[j].append(intp_linear(
+#                     datetime_row_from_source[i-1].timestamp(),
+#                     datetime_.timestamp(),
+#                     dt.timestamp(),
+#                     p[i-1],
+#                     p[i])) for j, p in enumerate(raw_data)]
+#             else:
+#                 continue
+
+#             del datetime_row_from_source[:i]
+#             for p in range(len(raw_data)):
+#                 del raw_data[p][:i]
+#             break
+
+#         datetime_ += DATETIME_STEP
+
+#     return data_json
 
 
 ############

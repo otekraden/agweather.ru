@@ -163,7 +163,7 @@ class Forecast(models.Model):
     forecast_template = models.ForeignKey(
         ForecastTemplate, on_delete=models.PROTECT)
     scraped_datetime = models.DateTimeField()
-    start_forecast_datetime = models.DateTimeField()
+    forecast_datetime = models.DateTimeField()
     data_json = models.JSONField()
 
     def is_actual(self):

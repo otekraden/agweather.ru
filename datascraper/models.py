@@ -94,7 +94,7 @@ class ForecastTemplate(models.Model):
             # Getting json_data from calling source scraper function
             scraper_func = getattr(forecasts, template.forecast_source.id)
             try:
-                forecast_data_json = scraper_func(
+                forecast_records = scraper_func(
                     start_forecast_datetime, forecast_url)
             except Exception as _ex:
 
@@ -102,12 +102,12 @@ class ForecastTemplate(models.Model):
                 continue
 
             F_LOGGER.debug("Scraped data >\n"+'\n'.join([
-                str(d) for d in forecast_data_json]))
+                f'{d[0].isoformat()}, {d[1]}' for d in forecast_records]))
 
             Forecast.objects.update_or_create(
                 forecast_template=template,
                 start_forecast_datetime=start_forecast_datetime,
-                data_json=forecast_data_json,
+                data_json=forecast_data,
                 defaults={'scraped_datetime': timezone.now()})
 
         # Closing Selenium driver
@@ -143,19 +143,10 @@ class ForecastTemplate(models.Model):
     @staticmethod
     def start_forecast_datetime(local_datetime: datetime):
         # Calculating start forecast datetime
-        # Local start time can be only 3:00, 9:00, 15:00 or 21:00:
-        # night, morning, afternoon, evening.
-        # Forecasts step is 6 hours
+        # Forecasts step is 1 hour
         start_forecast_datetime = local_datetime.replace(
-            minute=0, second=0, microsecond=0)
-        start_hour = (((start_forecast_datetime.hour-3)//6+1)*6+3)
-        if start_hour == 27:
-            start_forecast_datetime = start_forecast_datetime.replace(
-                hour=3)
-            start_forecast_datetime += timedelta(days=1)
-        else:
-            start_forecast_datetime = start_forecast_datetime.replace(
-                hour=start_hour)
+            minute=0, second=0, microsecond=0) + timedelta(hours=1)
+
         return start_forecast_datetime
 
 

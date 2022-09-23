@@ -26,7 +26,7 @@ DATETIME_STEP = timedelta(hours=6)
 # !To provide a call function from Forecast template class method
 # "scrap_all_forecasts" their names must be the same as in Database:
 # table "datascraper_forecastsource", col:"id"
-def rp5(start_datetime, url):
+def rp5(start_forecast_datetime, url):
 
     # Scraping html content from source
     soup = get_soup(url)
@@ -38,7 +38,7 @@ def rp5(start_datetime, url):
     start_date_from_source = func_start_date_from_source(
         month=month_rusname_to_number(start_date_from_source[1][:3]),
         day=int(start_date_from_source[0]),
-        req_start_datetime=start_datetime
+        req_start_datetime=start_forecast_datetime
     )
 
     # Parsing time row from source
@@ -61,10 +61,17 @@ def rp5(start_datetime, url):
     wind_vel_row = [w.find('div', class_='wv_0') for w in wind_vel_row]
     wind_vel_row = [int(w.get_text()) if w else 0 for w in wind_vel_row]
 
-    return time_row, (temp_row, press_row, wind_vel_row)
+    forecast_data = list(zip(temp_row, press_row, wind_vel_row))
 
+ 
 
-def yandex(start_datetime, url):
+    return generate_forecast_records(
+        start_forecast_datetime,
+        start_date_from_source,
+        time_row,
+        forecast_data)
+
+def yandex(start_forecast_datetime, url):
 
     # Scraping html content from source
     def get_ftab():
@@ -84,7 +91,7 @@ def yandex(start_datetime, url):
     start_date_from_source = func_start_date_from_source(
         month=month_rusname_to_number(date_tags[2].get_text()),
         day=int(date_tags[0].get_text()),
-        req_start_datetime=start_datetime
+        req_start_datetime=start_forecast_datetime
     )
 
     ftab = [day.find_all('div', recursive=False)[:6*4] for day in ftab]
@@ -113,7 +120,7 @@ def yandex(start_datetime, url):
     return time_row, temp_row, press_row, wind_vel_row
 
 
-def meteoinfo(start_datetime, url):
+def meteoinfo(start_forecast_datetime, url):
 
     # Scraping html content from source
     soup = get_soup(url)
@@ -127,7 +134,7 @@ def meteoinfo(start_datetime, url):
     start_date_from_source = func_start_date_from_source(
         month=month_rusname_to_number(start_date_from_source),
         day=int(re.findall(r'\d+', start_date_from_source)[0]),
-        req_start_datetime=start_datetime
+        req_start_datetime=start_forecast_datetime
     )
 
     # Parsing weather parameters rows from source:
@@ -151,10 +158,10 @@ def meteoinfo(start_datetime, url):
     raw_data = (temp_row, press_row, wind_vel_row)
 
     return json_data_gen(
-        start_datetime, start_date_from_source, time_row, raw_data)
+        start_forecast_datetime, start_date_from_source, time_row, raw_data)
 
 
-def foreca(start_datetime, url: str):
+def foreca(start_forecast_datetime, url: str):
 
     # Scraping html content from source first day page
     soup = get_soup(url)
@@ -167,7 +174,7 @@ def foreca(start_datetime, url: str):
     start_date_from_source = func_start_date_from_source(
         month=month_rusname_to_number(start_date_from_source[1][:3]),
         day=int(start_date_from_source[0]),
-        req_start_datetime=start_datetime
+        req_start_datetime=start_forecast_datetime
     )
 
     # Parsing next days urls from source first day page
@@ -209,7 +216,7 @@ def foreca(start_datetime, url: str):
     #     print(i)
 
     return json_data_gen(
-        start_datetime, start_date_from_source, raw_data[0], raw_data[1:])
+        start_forecast_datetime, start_date_from_source, raw_data[0], raw_data[1:])
 
 
 ########
@@ -292,10 +299,29 @@ def month_rusname_to_number(name):
         return 5
     return month_tuple.index(name)
 
-def func_gen_datetime_row(start_date, time_row):
 
-    datetime_row = []
-     
+def generate_forecast_records(
+        start_forecast_datetime,
+        start_date_from_source,
+        time_row,
+        forecast_data):
+
+    forecast_records, prev_hour = [], None
+    for hour in time_row:
+        if prev_hour and prev_hour > hour:
+            start_date_from_source += timedelta(days=1)
+        datetime_ = start_date_from_source + timedelta(hours=hour)
+        prev_hour = hour
+        forecast_record = forecast_data.pop(0)
+        if datetime_ >= start_forecast_datetime:
+            forecast_records.append((datetime_, forecast_record))
+    
+    # for d in forecast_records:
+    #     print(d[0].isoformat(), d[1])
+
+    return forecast_records
+
+
 
 
 

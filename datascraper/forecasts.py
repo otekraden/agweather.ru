@@ -3,28 +3,20 @@ from datetime import datetime, timedelta
 import time
 import re
 import requests
-# import os
-# from dotenv import load_dotenv
 from fake_useragent import UserAgent
-# from pprint import pprint
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-# from selenium.webdriver.chrome.service import Service as ChromeService
-# from webdriver_manager.chrome import ChromeDriverManager
 from selenium_stealth import stealth
-# from random import choice
 import zipfile
 from datascraper.proxy import set_proxy
 from datascraper.logging import init_logger
-
-DATETIME_STEP = timedelta(hours=6)
 
 
 ######################################
 # FORECAST SOURCES SCRAPER FUNCTIONS #
 ######################################
 # !To provide a call function from Forecast template class method
-# "scrap_all_forecasts" their names must be the same as in Database:
+# "scrap_forecasts" their names must be the same as in Database:
 # table "datascraper_forecastsource", col:"id"
 def rp5(start_forecast_datetime, url):
 
@@ -61,15 +53,12 @@ def rp5(start_forecast_datetime, url):
     wind_vel_row = [w.find('div', class_='wv_0') for w in wind_vel_row]
     wind_vel_row = [int(w.get_text()) if w else 0 for w in wind_vel_row]
 
-    forecast_data = list(zip(temp_row, press_row, wind_vel_row))
-
- 
-
-    return generate_forecast_records(
+    return generate_forecasts(
         start_forecast_datetime,
         start_date_from_source,
         time_row,
-        forecast_data)
+        list(zip(temp_row, press_row, wind_vel_row)))
+
 
 def yandex(start_forecast_datetime, url):
 
@@ -105,19 +94,23 @@ def yandex(start_forecast_datetime, url):
     temp_row = [t.replace(chr(8722), '-').replace('°', '').split('...')
                 for t in temp_row]
     temp_row = [[int(i) for i in t] for t in temp_row]
-    temp_row = [int(round(sum(t)/len(t))) for t in temp_row]
+    temp_row = [sum(t)/len(t) for t in temp_row]
 
     # Pressure
     press_row = [int(p.get_text()) for p in ftab[2::6]]
 
     # Wind velocity
     wind_vel_row = [w.contents[0].replace(',', '.') for w in ftab[4::6]]
-    wind_vel_row = [int(round(float(w), 0)) for w in wind_vel_row]
+    wind_vel_row = [float(w) for w in wind_vel_row]
 
     # Parsing time row from source
     time_row = [9, 15, 21, 3]*(len(temp_row)//4)
 
-    return time_row, temp_row, press_row, wind_vel_row
+    return generate_forecasts(
+        start_forecast_datetime,
+        start_date_from_source,
+        time_row,
+        list(zip(temp_row, press_row, wind_vel_row)))
 
 
 def meteoinfo(start_forecast_datetime, url):
@@ -154,11 +147,11 @@ def meteoinfo(start_forecast_datetime, url):
         time_row.append(time)
         time = 15 if time == 3 else 3
 
-    # Merge parameters from source into one tuple
-    raw_data = (temp_row, press_row, wind_vel_row)
-
-    return json_data_gen(
-        start_forecast_datetime, start_date_from_source, time_row, raw_data)
+    return generate_forecasts(
+        start_forecast_datetime,
+        start_date_from_source,
+        time_row,
+        list(zip(temp_row, press_row, wind_vel_row)))
 
 
 def foreca(start_forecast_datetime, url: str):
@@ -187,52 +180,44 @@ def foreca(start_forecast_datetime, url: str):
     ftabs = [ftab] + [get_soup(ndu).find('div', class_='page-content') for
                       ndu in next_days_urls]
 
-    raw_data = [[] for i in range(4)]
+    forecasts_data = [[] for i in range(4)]
     # Parsing from saved tables
     for ftab in ftabs:
         # Parsing time row from source
         ftab = ftab.find('div', class_='hourContainer')
         time_row = ftab.find_all('span', class_='time_24h')
         time_row = [int(t.get_text()) for t in time_row]
-        raw_data[0].extend(time_row)
+        forecasts_data[0].extend(time_row)
 
         # Parsing weather parameters rows from source pages:
         # Temperature
         temp_row = ftab.find_all('span', class_='t')
         temp_row = [int(t.find('span', class_='temp_c').
                         get_text()) for t in temp_row]
-        raw_data[1].extend(temp_row)
+        forecasts_data[1].extend(temp_row)
         # Pressure
         press_row = ftab.find_all('span', class_='value pres pres_mmhg')
-        press_row = [int(round(float(p.get_text()))) for p in press_row]
-        raw_data[2].extend(press_row)
+        press_row = [float(p.get_text()) for p in press_row]
+        forecasts_data[2].extend(press_row)
         # Wind velocity
         wind_vel_row = ftab.find_all('span', class_='windSpeed')
         wind_vel_row = [int(w.find('span', class_='value wind wind_ms').
                             get_text().split()[0]) for w in wind_vel_row]
-        raw_data[3].extend(wind_vel_row)
+        forecasts_data[3].extend(wind_vel_row)
 
-    # for i in raw_data:
-    #     print(i)
-
-    return json_data_gen(
-        start_forecast_datetime, start_date_from_source, raw_data[0], raw_data[1:])
+    return generate_forecasts(
+        start_forecast_datetime,
+        start_date_from_source,
+        forecasts_data[0],
+        list(zip(*forecasts_data[1:])))
 
 
 ########
 # MISC #
 ########
 
-# # list of random proxies
-# proxies = []
-
-
 def get_soup(url, archive_payload=False):
     """Scraping html content from source with the help of Selenium library"""
-    # global proxies
-
-    # if not proxies:
-    #     get_proxies()
 
     headers = {'Accept': '*/*', 'User-Agent': UserAgent().random}
 
@@ -242,7 +227,6 @@ def get_soup(url, archive_payload=False):
         proxies = {'https': proxy}
     else:
         proxies = None
-    # print(proxy)
 
     if not archive_payload:
         response = requests.get(
@@ -271,15 +255,6 @@ def get_soup(url, archive_payload=False):
     return BeautifulSoup(src, "lxml")
 
 
-# def get_proxies():
-#     """Scraping random proxy list"""
-#     # print('get_proxies called!!!')
-#     global proxies
-#     load_dotenv()
-#     proxies = os.environ["PROXIES"].split('\n')
-#     proxies = [p.split(':') for p in proxies]
-
-
 def func_start_date_from_source(month, day, req_start_datetime):
     """Calculate the starting date of the forecast source."""
     year = req_start_datetime.year
@@ -300,13 +275,13 @@ def month_rusname_to_number(name):
     return month_tuple.index(name)
 
 
-def generate_forecast_records(
+def generate_forecasts(
         start_forecast_datetime,
         start_date_from_source,
         time_row,
         forecast_data):
 
-    forecast_records, prev_hour = [], None
+    forecasts, prev_hour = [], None
     for hour in time_row:
         if prev_hour and prev_hour > hour:
             start_date_from_source += timedelta(days=1)
@@ -314,69 +289,15 @@ def generate_forecast_records(
         prev_hour = hour
         forecast_record = forecast_data.pop(0)
         if datetime_ >= start_forecast_datetime:
-            forecast_records.append((datetime_, forecast_record))
-    
-    # for d in forecast_records:
-    #     print(d[0].isoformat(), d[1])
+            forecasts.append((datetime_, forecast_record))
 
-    return forecast_records
-
-
-
-
-
-
-
-# def intp_linear(xa, xc, xb, ya, yb):
-#     """Linear interpolation."""
-#     return round((xc-xa)/(xb-xa)*(yb-ya)+ya)
-
-
-# def json_data_gen(start_datetime, start_date_from_source,
-#                   time_row_from_source, raw_data):
-#     """Recalculating forecast data from source datetime row to required row."""
-
-#     # Generating datetime row from html source
-#     datetime_row_from_source = []
-#     for i, hour in enumerate(time_row_from_source):
-#         if i != 0 and hour < time_row_from_source[i-1]:
-#             start_date_from_source += timedelta(days=1)
-#         datetime_row_from_source.append(start_date_from_source
-#                                         + timedelta(hours=hour))
-
-#     # Generating json record
-#     data_json, datetime_ = [[] for i in raw_data], start_datetime
-#     # datetime_step = timedelta(hours=6)
-#     # index = 0
-#     while datetime_ <= datetime_row_from_source[-1]:
-#         for i, dt in enumerate(datetime_row_from_source):
-#             if (i == 0 and datetime_ < dt) or dt - datetime_ >= DATETIME_STEP:
-#                 [data_json[p].append(None) for p in range(len(raw_data))]
-#             elif datetime_ == dt:
-#                 [data_json[j].append(p[i]) for j, p in enumerate(raw_data)]
-#             elif datetime_ < dt:
-#                 [data_json[j].append(intp_linear(
-#                     datetime_row_from_source[i-1].timestamp(),
-#                     datetime_.timestamp(),
-#                     dt.timestamp(),
-#                     p[i-1],
-#                     p[i])) for j, p in enumerate(raw_data)]
-#             else:
-#                 continue
-
-#             del datetime_row_from_source[:i]
-#             for p in range(len(raw_data)):
-#                 del raw_data[p][:i]
-#             break
-
-#         datetime_ += DATETIME_STEP
-
-#     return data_json
+    return forecasts
 
 
 ############
 # SELENIUM #
 ############
+
 
 driver = None
 

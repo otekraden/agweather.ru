@@ -5,7 +5,7 @@ from django.shortcuts import render
 from datascraper.models import (
     WeatherParameter, Location, ForecastTemplate, Forecast, ForecastSource,
     ArchiveTemplate, Archive)
-from datascraper.forecasts import DATETIME_STEP
+# from datascraper.forecasts import DATETIME_STEP
 from backports import zoneinfo
 from django.utils import timezone
 from datetime import timedelta

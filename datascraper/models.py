@@ -61,6 +61,18 @@ class ForecastTemplate(models.Model):
     class Meta:
         ordering = ['location', 'forecast_source']
 
+    # Getting local datetime at forecast location
+    def local_datetime(self):
+        return timezone.localtime(
+            timezone=zoneinfo.ZoneInfo(self.location.timezone))
+
+    # Calculating start forecast datetime
+    def start_forecast_datetime(self):
+        # Calculating start forecast datetime
+        # Forecasts step is 1 hour
+        return self.local_datetime().replace(
+            minute=0, second=0, microsecond=0) + timedelta(hours=1)
+
     def __str__(self):
         return f"{self.forecast_source} --> {self.location}"
 
@@ -74,18 +86,14 @@ class ForecastTemplate(models.Model):
             templates = cls.objects.all()
 
         for template in templates:
-            # print(f"Scraping forecast: {template}")
+
             F_LOGGER.debug(template)
 
-            # Getting local datetime at forecast location
-            timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
-            local_datetime = timezone.localtime(timezone=timezone_info)
+            local_datetime = template.local_datetime()
+            F_LOGGER.debug(f'LDT: {local_datetime}')
 
-            # Calculating start forecast datetime
-            start_forecast_datetime = ForecastTemplate.start_forecast_datetime(
-                local_datetime)
-
-            F_LOGGER.debug(start_forecast_datetime)
+            start_forecast_datetime = template.start_forecast_datetime()
+            F_LOGGER.debug(f'SFDT: {start_forecast_datetime}')
 
             # Full pass to forecast source
             forecast_url = template.forecast_source.url + \
@@ -94,25 +102,35 @@ class ForecastTemplate(models.Model):
             # Getting json_data from calling source scraper function
             scraper_func = getattr(forecasts, template.forecast_source.id)
             try:
-                forecast_records = scraper_func(
+                scraped_forecasts = scraper_func(
                     start_forecast_datetime, forecast_url)
-            except Exception as _ex:
 
-                F_LOGGER.error(f"{template}: {_ex}")
+            except Exception as e:
+
+                F_LOGGER.error(f"{template}: {e}")
                 continue
 
-            F_LOGGER.debug("Scraped data >\n"+'\n'.join([
-                f'{d[0].isoformat()}, {d[1]}' for d in forecast_records]))
+            F_LOGGER.debug("Scraped forecasts: \n"+'\n'.join([
+                f'{f[0].isoformat()}, {f[1]}' for f in scraped_forecasts]))
 
-            Forecast.objects.update_or_create(
-                forecast_template=template,
-                start_forecast_datetime=start_forecast_datetime,
-                data_json=forecast_data,
-                defaults={'scraped_datetime': timezone.now()})
+            for forecast in scraped_forecasts:
+
+                prediction_range_hours = int(
+                    (forecast[0] - local_datetime.replace(
+                        minute=0, second=0, microsecond=0))/timedelta(hours=1))
+
+                Forecast.objects.update_or_create(
+                    forecast_template=template,
+                    forecast_datetime=forecast[0],
+                    forecast_data=forecast[1],
+                    prediction_range_hours=prediction_range_hours,
+                    # defaults={'scraped_datetime': timezone.now()})
+                    defaults={'scraped_datetime': local_datetime})
 
         # Closing Selenium driver
-        forecasts.driver.close()
-        forecasts.driver.quit()
+        if forecasts.driver:
+            forecasts.driver.close()
+            forecasts.driver.quit()
 
     @classmethod
     def get_outdated_report(cls):
@@ -121,14 +139,18 @@ class ForecastTemplate(models.Model):
         report = []
         for template in cls.objects.all():
 
-            last_record = Forecast.objects.filter(
-                forecast_template=template).latest('scraped_datetime')
+            def report_append(): report.append(template.forecast_source)
 
-            if timezone.make_naive(last_record.scraped_datetime) + \
-                    timedelta(hours=1) < datetime.now():
+            try:
 
-                report.append(
-                    last_record.forecast_template.forecast_source)
+                last_forecast = Forecast.objects.filter(
+                    forecast_template=template).latest('scraped_datetime')
+
+                if not last_forecast.is_actual():
+                    report_append()
+
+            except Forecast.DoesNotExist:
+                report_append()
 
         if report:
             report = [
@@ -140,25 +162,19 @@ class ForecastTemplate(models.Model):
 
             return report
 
-    @staticmethod
-    def start_forecast_datetime(local_datetime: datetime):
-        # Calculating start forecast datetime
-        # Forecasts step is 1 hour
-        start_forecast_datetime = local_datetime.replace(
-            minute=0, second=0, microsecond=0) + timedelta(hours=1)
-
-        return start_forecast_datetime
-
 
 class Forecast(models.Model):
     forecast_template = models.ForeignKey(
         ForecastTemplate, on_delete=models.PROTECT)
     scraped_datetime = models.DateTimeField()
     forecast_datetime = models.DateTimeField()
-    data_json = models.JSONField()
+    prediction_range_hours = models.IntegerField()
+    forecast_data = models.JSONField()
 
     def is_actual(self):
-        return self.scraped_datetime >= timezone.now() - timedelta(hours=1)
+        exp_datetime = timezone.make_naive(
+            self.scraped_datetime) + timedelta(hours=1)
+        return datetime.now() < exp_datetime
 
     def __str__(self):
         return f"{self.forecast_template.forecast_source} --> \
@@ -242,9 +258,9 @@ class ArchiveTemplate(models.Model):
 class Archive(models.Model):
     archive_template = models.ForeignKey(
         ArchiveTemplate, on_delete=models.PROTECT)
-    scraped_datetime = models.DateTimeField()  # default=datetime.now()
+    scraped_datetime = models.DateTimeField()
     record_datetime = models.DateTimeField(default=None)
-    data_json = models.JSONField()
+    archive_data = models.JSONField()
 
     class Meta:
         ordering = ['archive_template', 'record_datetime']

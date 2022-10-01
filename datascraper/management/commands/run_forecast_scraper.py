@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        logger.info("> START")
+        logger.info("START")
 
         forecast_source_id = kwargs['forecast_source_id']
 
@@ -24,13 +24,14 @@ class Command(BaseCommand):
 
         except Exception as e:
             logger.error(e)
-
-        logger.info("> END")
+            exit()
 
         outdated_report = ForecastTemplate.get_outdated_report()
 
         if outdated_report:
 
-            outdated_report = f"> OUTDATED data detected:\n{outdated_report}"
+            outdated_report = f"OUTDATED data detected:\n{outdated_report}"
 
             logger.critical(outdated_report)
+
+        logger.info("END")

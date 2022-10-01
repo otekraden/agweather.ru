@@ -14,7 +14,7 @@ from .models import (
 
 from backports import zoneinfo
 from django.utils import timezone
-from .forecasts import DATETIME_STEP
+# from .forecasts import DATETIME_STEP
 from django_admin_inline_paginator.admin import TabularInlinePaginated
 
 #############
@@ -140,13 +140,13 @@ class ForecastInline(TabularInlinePaginated):
 
         datetime_col = []
         datetime_ = timezone.localtime(
-            value=obj.start_forecast_datetime,
+            value=obj.forecast_datetime,
             timezone=zoneinfo.ZoneInfo(obj.forecast_template.location.timezone)
             )
 
         for i in data_json[0]:
             datetime_col.append(datetime_)
-            datetime_ += DATETIME_STEP
+            # datetime_ += DATETIME_STEP
 
         data_json.insert(0, datetime_col)
 

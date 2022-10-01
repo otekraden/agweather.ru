@@ -7,8 +7,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        logger.info("> START")
+        logger.info("START")
 
         ArchiveTemplate.scrap_archive()
 
-        logger.info("> END")
+        logger.info("END")

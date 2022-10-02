@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from datascraper.models import ArchiveTemplate, A_LOGGER as logger
+from datascraper.models import ArchiveTemplate
 
 
 class Command(BaseCommand):
@@ -7,8 +7,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        logger.info("START")
-
-        ArchiveTemplate.scrap_archive()
-
-        logger.info("END")
+        ArchiveTemplate.scrap_archives()

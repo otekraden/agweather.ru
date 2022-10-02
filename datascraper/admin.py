@@ -136,7 +136,7 @@ class ForecastInline(TabularInlinePaginated):
     @admin.display(description=format_html(""))
     def forecast_data(self, obj):
 
-        data_json = obj.data_json
+        data_json = obj.forecast_data
 
         datetime_col = []
         datetime_ = timezone.localtime(

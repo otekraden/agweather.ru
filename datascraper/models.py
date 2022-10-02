@@ -10,9 +10,6 @@ from datascraper.logging import init_logger
 # MISC #
 ########
 
-F_LOGGER = init_logger('Forecast scraper')
-A_LOGGER = init_logger('Archive scraper')
-
 
 class Location(models.Model):
     name = models.CharField(max_length=30)
@@ -77,23 +74,31 @@ class ForecastTemplate(models.Model):
         return f"{self.forecast_source} --> {self.location}"
 
     @classmethod
-    def scrap_forecasts(cls, forecast_source_id=None):
+    def scrap_forecasts(cls, forecast_source_id):
 
-        if forecast_source_id:
-            templates = cls.objects.filter(
-                forecast_source_id=forecast_source_id)
-        else:
+        logger = init_logger('Forecast scraper')
+        logger.info("START")
+
+        if not forecast_source_id:
             templates = cls.objects.all()
+        else:
+            try:
+                ForecastSource.objects.get(id=forecast_source_id)
+                templates = cls.objects.filter(
+                    forecast_source_id=forecast_source_id)
+            except ForecastSource.DoesNotExist as e:
+                logger.error(e)
+                exit()
 
         for template in templates:
 
-            F_LOGGER.debug(template)
+            logger.debug(template)
 
             local_datetime = template.local_datetime()
-            F_LOGGER.debug(f'LDT: {local_datetime}')
+            logger.debug(f'LDT: {local_datetime}')
 
             start_forecast_datetime = template.start_forecast_datetime()
-            F_LOGGER.debug(f'SFDT: {start_forecast_datetime}')
+            logger.debug(f'SFDT: {start_forecast_datetime}')
 
             # Full pass to forecast source
             forecast_url = template.forecast_source.url + \
@@ -107,10 +112,10 @@ class ForecastTemplate(models.Model):
 
             except Exception as e:
 
-                F_LOGGER.error(f"{template}: {e}")
+                logger.error(f"{template}: {e}")
                 continue
 
-            F_LOGGER.debug("Scraped forecasts: \n"+'\n'.join([
+            logger.debug("Scraped forecasts: \n"+'\n'.join([
                 f'{f[0].isoformat()}, {f[1]}' for f in scraped_forecasts]))
 
             for forecast in scraped_forecasts:
@@ -132,14 +137,13 @@ class ForecastTemplate(models.Model):
             forecasts.driver.close()
             forecasts.driver.quit()
 
-    @classmethod
-    def get_outdated_report(cls):
-        # Getting a report on forecast sources
+        # Checking for expired forecasts
         # whose data is more than an hour out of date
-        report = []
+        exp_report = []
         for template in cls.objects.all():
 
-            def report_append(): report.append(template.forecast_source)
+            def exp_report_append(): exp_report.append(
+                        template.forecast_source)
 
             try:
 
@@ -147,20 +151,24 @@ class ForecastTemplate(models.Model):
                     forecast_template=template).latest('scraped_datetime')
 
                 if not last_forecast.is_actual():
-                    report_append()
+                    exp_report_append()
 
             except Forecast.DoesNotExist:
-                report_append()
+                exp_report_append()
 
-        if report:
-            report = [
+        if exp_report:
+            exp_report = [
                 ((i[0].name+':').ljust(15),
                  i[1],
                  ForecastTemplate.objects.filter(forecast_source=i[0]).count())
-                for i in collections.Counter(report).items()]
-            report = '\n'.join([f"{i[0]} {i[1]}/{i[2]} locs" for i in report])
+                for i in collections.Counter(exp_report).items()]
+            exp_report = '\n'.join(
+                [f"{i[0]} {i[1]}/{i[2]} locs" for i in exp_report])
+            exp_report = f"OUTDATED data detected:\n{exp_report}"
 
-            return report
+            logger.critical(exp_report)
+
+        logger.info("END")
 
 
 class Forecast(models.Model):
@@ -209,21 +217,24 @@ class ArchiveTemplate(models.Model):
         return f"{self.archive_source} --> {self.location}"
 
     @classmethod
-    def scrap_archive(cls):
+    def scrap_archives(cls):
+
+        logger = init_logger('Archive scraper')
+        logger.info("START")
 
         templates = cls.objects.all()
 
         for template in templates:
             # print(f"Scraping archive: {template}")
-            A_LOGGER.debug(template)
+            logger.debug(template)
 
             # Getting local datetime at archive location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
             local_datetime = timezone.localtime(timezone=timezone_info)
 
             # Calculating start archive datetime
-            start_archive_datetime = ForecastTemplate.start_forecast_datetime(
-                local_datetime) - timedelta(hours=6)
+            start_archive_datetime = local_datetime.replace(
+                minute=0, second=0, microsecond=0)
 
             # Full pass to archive source
             archive_url = template.archive_source.url + \
@@ -242,7 +253,7 @@ class ArchiveTemplate(models.Model):
                     start_archive_datetime, archive_url, last_record_datetime)
             except Exception as _ex:
 
-                A_LOGGER.error(f"{template}: {_ex}")
+                logger.error(f"{template}: {_ex}")
 
                 continue
 
@@ -253,6 +264,7 @@ class ArchiveTemplate(models.Model):
                     record_datetime=record[0],
                     data_json=record[1],
                     defaults={'scraped_datetime': timezone.now()})
+        logger.info("END")
 
 
 class Archive(models.Model):
@@ -260,7 +272,7 @@ class Archive(models.Model):
         ArchiveTemplate, on_delete=models.PROTECT)
     scraped_datetime = models.DateTimeField()
     record_datetime = models.DateTimeField(default=None)
-    archive_data = models.JSONField()
+    data_json = models.JSONField()
 
     class Meta:
         ordering = ['archive_template', 'record_datetime']

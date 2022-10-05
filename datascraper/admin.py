@@ -17,6 +17,10 @@ from django.utils import timezone
 # from .forecasts import DATETIME_STEP
 from django_admin_inline_paginator.admin import TabularInlinePaginated
 
+DATA_JSON_NAME = [
+    f'{i.name}, {i.meas_unit}' for i in WeatherParameter.objects.all()]
+DATA_JSON_NAME = ''.join([f'<th>{str(j)}</th>'for j in DATA_JSON_NAME])
+
 #############
 # LOCATIONS #
 #############
@@ -70,6 +74,9 @@ class LocationAdmin(admin.ModelAdmin):
 
     search_fields = ["name"]
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 ####################
 # FORECAST SOURCES #
@@ -85,6 +92,9 @@ class ForecastSourceAdmin(admin.ModelAdmin):
         color = obj.chart_color
 
         return format_html('<b style="color: {};">{}</a>', color, color)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 ###################
@@ -102,10 +112,13 @@ class ArchiveSourceAdmin(admin.ModelAdmin):
 
         return format_html('<b style="color: {};">{}</a>', color, color)
 
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 ######################
 # WEATHER PARAMETERS #
 ######################
+
 
 @admin.register(WeatherParameter)
 class WeatherParameterAdmin(admin.ModelAdmin):
@@ -124,60 +137,37 @@ class ForecastInline(TabularInlinePaginated):
 
     model = Forecast
     extra = 0
-    per_page = 5
+    per_page = 100
 
     verbose_name = 'forecast record'
 
-    fields = ("forecast_data",)
-    readonly_fields = ("forecast_data",)
+    fields = ("scraped_datetime_", "forecast_datetime_",
+              "prediction_range_hours", "data_json")
+    readonly_fields = ("scraped_datetime_", "forecast_datetime_",
+                       "prediction_range_hours", "data_json")
 
-    ordering = ("-scraped_datetime",)
+    ordering = ("-scraped_datetime", "prediction_range_hours")
 
-    @admin.display(description=format_html(""))
-    def forecast_data(self, obj):
+    def scraped_datetime_(self, obj):
 
-        data_json = obj.forecast_data
-
-        datetime_col = []
-        datetime_ = timezone.localtime(
-            value=obj.forecast_datetime,
-            timezone=zoneinfo.ZoneInfo(obj.forecast_template.location.timezone)
-            )
-
-        for i in data_json[0]:
-            datetime_col.append(datetime_)
-            # datetime_ += DATETIME_STEP
-
-        data_json.insert(0, datetime_col)
-
-        scraped_datetime = timezone.localtime(
+        return timezone.localtime(
             value=obj.scraped_datetime,
             timezone=zoneinfo.ZoneInfo(obj.forecast_template.location.timezone)
-            ).strftime("%Y-%m-%d %H:%M:%S %Z")
+            ).isoformat(sep=' ', timespec='minutes')
 
-        caption = f'<caption style="background:#265d2b">\
-            <b>SCRAPED: {scraped_datetime}</b>\
-            </caption>'
+    def forecast_datetime_(self, obj):
 
-        thead = [f'{i.name}, {i.meas_unit}'
-                 for i in WeatherParameter.objects.all()]
-        thead.insert(0, 'Local Datetime')
-        thead = ''.join([f'<th style="padding:3px">{str(j)}</th>'
-                         for j in thead])
-        thead = f'<thead><tr>{thead}</tr></thead>'
+        return timezone.localtime(
+            value=obj.forecast_datetime,
+            timezone=zoneinfo.ZoneInfo(obj.forecast_template.location.timezone)
+            ).isoformat(sep=' ', timespec='minutes')
 
-        table = list(zip(*data_json))
+    @admin.display(description=format_html(DATA_JSON_NAME))
+    def data_json(self, obj):
 
-        tbody = [''.join([f'<td style="padding:3px">{str(j)}</td>'
-                          for j in i]) for i in table]
-        tbody = ''.join([f'<tr>{i}</tr>' for i in tbody])
-        tbody = f'<tbody>{tbody}</tbody>'
+        data_json = ''.join([f'<td>{i}</td>' for i in obj.forecast_data])
 
-        table = caption + thead + tbody
-
-        table = f'<table>{table}</table>'
-
-        return format_html(table)
+        return format_html(data_json)
 
 
 @admin.register(ForecastTemplate)
@@ -234,15 +224,15 @@ class ArchiveInline(TabularInlinePaginated):
         local_datetime = timezone.localtime(
             value=obj.record_datetime,
             timezone=zoneinfo.ZoneInfo(obj.archive_template.location.timezone)
-            ).strftime("%Y-%m-%d %H:%M:%S %Z")
+            ).isoformat(sep=' ', timespec='minutes')
 
         return local_datetime
 
-    data_json_name = [
-        f'{i.name}, {i.meas_unit}' for i in WeatherParameter.objects.all()]
-    data_json_name = ''.join([f'<th>{str(j)}</th>'for j in data_json_name])
+    # data_json_name = [
+    #     f'{i.name}, {i.meas_unit}' for i in WeatherParameter.objects.all()]
+    # data_json_name = ''.join([f'<th>{str(j)}</th>'for j in data_json_name])
 
-    @admin.display(description=format_html(data_json_name))
+    @admin.display(description=format_html(DATA_JSON_NAME))
     def data_json_(self, obj):
 
         data_json = ''.join([f'<td>{i}</td>' for i in obj.data_json])

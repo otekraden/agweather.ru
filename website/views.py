@@ -39,7 +39,7 @@ def forecast(request):
         forecast_length = 14
     elif forecast_length < 1:
         forecast_length = 1
-    forecast_length_steps = forecast_length*4
+    forecast_length_steps = forecast_length*24
 
     weather_parameter_index = WEATHER_PARAMETERS.index(weather_parameter)
 
@@ -48,74 +48,67 @@ def forecast(request):
     forecast_templates = ForecastTemplate.objects.filter(
         location=location_object)
 
-
-    # Getting local datetime at forecast location
-    timezone_info = zoneinfo.ZoneInfo(location_object.timezone)
-    local_datetime = timezone.localtime(timezone=timezone_info)
-
     # Calculating start forecast datetime
-    start_forecast_datetime = ForecastTemplate.start_forecast_datetime(
-        local_datetime)
+    start_forecast_datetime = forecast_templates[0].start_forecast_datetime()
 
     # Generating datetime row
     datetime_row, datetime_ = [], start_forecast_datetime
     for step in range(forecast_length_steps):
         datetime_row.append(datetime_)
-        datetime_ += DATETIME_STEP
+        datetime_ += timedelta(hours=1)
 
     # Tooltip titles
     tooltip_titles = [dt.strftime("%d.%m %H:%M") for dt in datetime_row]
-    tooltip_titles = insert_empty_steps(tooltip_titles, '')
 
     # Making datasets for Chartjs
     datasets = []
     for template in forecast_templates:
-        forecast = Forecast.objects.filter(
-            forecast_template=template).latest('scraped_datetime')
-        if forecast.is_actual():
-            start_forecast_datetime_from_db = forecast.start_forecast_datetime
-            forecast_data = forecast.data_json[weather_parameter_index]
 
-            # Data correction
-            while datetime_row[0] != start_forecast_datetime_from_db:
-                if datetime_row[0] > start_forecast_datetime_from_db:
-                    start_forecast_datetime_from_db += DATETIME_STEP
-                    del forecast_data[0]
-                elif datetime_row[0] < start_forecast_datetime_from_db:
-                    start_forecast_datetime_from_db -= DATETIME_STEP
-                    forecast_data.insert(0, None)
+        forecasts = Forecast.objects.filter(forecast_template=template)
+        last_template_refresh = forecasts.latest(
+                'scraped_datetime').scraped_datetime
+        # print(last_template_refresh)
+        forecasts = forecasts.filter(
+            scraped_datetime=last_template_refresh)
+        
+        if not forecasts[0].is_actual():
+            continue
 
-            forecast_data = insert_empty_steps(forecast_data[
-                    :forecast_length_steps], 'none')
+        forecast_data = []
+        # print(forecasts)
+        for datetime_ in datetime_row:
+            try:
+                forecast_record = forecasts.get(
+                    forecast_datetime=datetime_).forecast_data[
+                        weather_parameter_index]
+            except Forecast.DoesNotExist:
+                forecast_record = 'none'
+            
+            forecast_data.append(forecast_record)
 
-            datasets.append({
-                'label': template.forecast_source.name,
-                'data': forecast_data,
-                'borderColor': template.forecast_source.chart_color,
-                'backgroundColor': template.forecast_source.chart_color,
-            })
+            # print(forecast_data)
+
+        datasets.append({
+            'label': template.forecast_source.name,
+            'data': forecast_data,
+            'borderColor': template.forecast_source.chart_color,
+            'backgroundColor': template.forecast_source.chart_color,
+        })
 
     # For X axe in Chartjs
-    labels = [dt.strftime("%a")
-              if dt.hour == 9
+    labels = [i.strftime("%a") if i.hour == 12
+              else ' '
+              if i.hour == 0
               else ''
-              for dt in datetime_row]
-    labels = insert_empty_steps(labels, '')
-    for index in range(len(labels)):
-        if tooltip_titles[index][-5:] == '21:00':
-            labels[index+1] = " "
-        elif tooltip_titles[index][-5:] == '09:00':
-            labels[index+1] = labels[index]
-            labels[index] = ""
+              for i in datetime_row]
 
     chartjs_data = {
         'labels': labels,
         'datasets': datasets,
     }
 
-    last_database_refresh = Forecast.objects.latest(
-        'scraped_datetime').scraped_datetime.strftime(
-            "Database updated:  %d.%m.%Y %H:%M UTC")
+    last_database_refresh = Forecast.objects.latest('scraped_datetime').scraped_datetime.strftime(
+        "Database updated:  %d.%m.%Y %H:%M UTC")
 
     scales_list = ((-5, 5), (755, 765), (0, 10))
     chartjs_options = {'suggestedMin': scales_list[weather_parameter_index][0],
@@ -150,12 +143,8 @@ def archive(request):
         location = LOCATIONS[0]
         # Default show Temperature
         weather_parameter = WEATHER_PARAMETERS[0]
-        # Default two week
+        # Default one week
         archive_length = 7
-
-        # weather_parameter = weather_parameters[0]
-        # archive_length = 14  # длина архива по умолчанию дней
-        # forecasts_foresight = 1
 
     elif request.method == 'POST':
         location = request.POST.get('location')
@@ -169,13 +158,6 @@ def archive(request):
     elif archive_length < 1:
         archive_length = 1
     archive_length_steps = archive_length*24
-
-    # forecasts_foresight = 1 if forecasts_foresight == '' else int(
-    #     forecasts_foresight)
-    # if forecasts_foresight > 10:
-    #     forecasts_foresight = 10
-    # elif forecasts_foresight < 1:
-    #     forecasts_foresight = 1
 
     weather_parameter_index = WEATHER_PARAMETERS.index(weather_parameter)
 
@@ -212,7 +194,6 @@ def archive(request):
     # tooltip_titles = [weekday_rus[i.weekday()] + i.strftime(" %d.%m %H:%M")
     #                   for i in datetime_row]  # Всплывающие ярлыки
 
-
     labels = [i.strftime("%d.%m") if i.hour == 12 else ' ' if i.hour ==
               0 else '' for i in datetime_row]  # Ярлыки оси Х для графика
 
@@ -229,8 +210,8 @@ def archive(request):
             except Archive.DoesNotExist:
                 archive_record = 'none'
             
-            if archive_record is None:
-                archive_record = 'none'
+            # if archive_record is None:
+            #     archive_record = 'none'
 
             archive_data.append(archive_record)
 

@@ -54,6 +54,7 @@ class ForecastTemplate(models.Model):
         ForecastSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     location_relative_url = models.CharField(max_length=100)
+    last_scraped = models.DateTimeField()
 
     class Meta:
         ordering = ['location', 'forecast_source']
@@ -96,6 +97,8 @@ class ForecastTemplate(models.Model):
 
             local_datetime = template.local_datetime()
             logger.debug(f'LDT: {local_datetime}')
+            template.last_scraped = local_datetime
+            template.save()
 
             start_forecast_datetime = template.start_forecast_datetime()
             logger.debug(f'SFDT: {start_forecast_datetime}')
@@ -181,6 +184,7 @@ class Forecast(models.Model):
 
     def is_actual(self):
         exp_datetime = timezone.make_naive(
+            # self.scraped_datetime) + timedelta(minutes=10)
             self.scraped_datetime) + timedelta(hours=1)
         return datetime.now() < exp_datetime
 
@@ -225,7 +229,6 @@ class ArchiveTemplate(models.Model):
         templates = cls.objects.all()
 
         for template in templates:
-            # print(f"Scraping archive: {template}")
             logger.debug(template)
 
             # Getting local datetime at archive location
@@ -280,5 +283,3 @@ class Archive(models.Model):
 
     def __str__(self):
         return ""
-        # return f"{self.archive_template.archive_source} --> \
-        #     {self.archive_template.location.name}"

@@ -1,11 +1,8 @@
 from django.shortcuts import render
-# from django.http import HttpResponseRedirect
-# from .forms import FeedbackForm
-# from .models import Feedback
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from datascraper.models import (
     WeatherParameter, Location, ForecastTemplate, Forecast, ForecastSource,
     ArchiveTemplate, Archive)
-# from datascraper.forecasts import DATETIME_STEP
 from backports import zoneinfo
 from django.utils import timezone
 from datetime import timedelta
@@ -57,36 +54,32 @@ def forecast(request):
         datetime_row.append(datetime_)
         datetime_ += timedelta(hours=1)
 
-    # Tooltip titles
+    # Tooltip titles for Chartjs
     tooltip_titles = [dt.strftime("%d.%m %H:%M") for dt in datetime_row]
 
     # Making datasets for Chartjs
     datasets = []
     for template in forecast_templates:
 
-        forecasts = Forecast.objects.filter(forecast_template=template)
-        last_template_refresh = forecasts.latest(
-                'scraped_datetime').scraped_datetime
-        # print(last_template_refresh)
-        forecasts = forecasts.filter(
-            scraped_datetime=last_template_refresh)
-        
+        forecasts = Forecast.objects.filter(
+            scraped_datetime=template.last_scraped)
+
         if not forecasts[0].is_actual():
             continue
 
         forecast_data = []
-        # print(forecasts)
         for datetime_ in datetime_row:
             try:
                 forecast_record = forecasts.get(
                     forecast_datetime=datetime_).forecast_data[
                         weather_parameter_index]
-            except Forecast.DoesNotExist:
+            except (ObjectDoesNotExist, MultipleObjectsReturned):
                 forecast_record = 'none'
-            
-            forecast_data.append(forecast_record)
 
-            # print(forecast_data)
+            if not forecast_record:
+                forecast_record = 'none'
+
+            forecast_data.append(forecast_record)
 
         datasets.append({
             'label': template.forecast_source.name,
@@ -96,10 +89,8 @@ def forecast(request):
         })
 
     # For X axe in Chartjs
-    labels = [i.strftime("%a") if i.hour == 12
-              else ' '
-              if i.hour == 0
-              else ''
+    labels = [i.strftime("%a") if i.hour == 12 else ' '
+              if i.hour == 0 else ''
               for i in datetime_row]
 
     chartjs_data = {
@@ -107,7 +98,8 @@ def forecast(request):
         'datasets': datasets,
     }
 
-    last_database_refresh = Forecast.objects.latest('scraped_datetime').scraped_datetime.strftime(
+    last_database_refresh = Forecast.objects.latest(
+        'scraped_datetime').scraped_datetime.strftime(
         "Database updated:  %d.%m.%Y %H:%M UTC")
 
     scales_list = ((-5, 5), (755, 765), (0, 10))
@@ -127,13 +119,12 @@ def forecast(request):
         'chartjs_data': chartjs_data,
         'forecast_sources': zip(FORECAST_SOURCES_NAMES, FORECAST_SOURCES_URLS),
         }
-    # from pprint import pprint
-    # pprint(chartjs_data)
 
     return render(
         request=request,
         template_name='website/forecast.html',
         context=context)
+
 
 def archive(request):
     """View"""
@@ -163,23 +154,16 @@ def archive(request):
 
     location_object = location_object_from_input(location)
 
-    # archive = ArchiveRecord.objects.latest('rec_date').rec_data
     archive_templates = ArchiveTemplate.objects.filter(
         location=location_object)
-    
+
     # Getting local datetime at archive location
     timezone_info = zoneinfo.ZoneInfo(location_object.timezone)
     local_datetime = timezone.localtime(timezone=timezone_info)
 
-    # print(local_datetime)
-    # print(timezone.localtime(local_datetime, timezone.utc))
-    # print("===================")
-
     # Calculating start archive datetime
     start_archive_datetime = local_datetime.replace(
             minute=0, second=0, microsecond=0)
-    
-    # print(start_archive_datetime)
 
     datetime_row, datetime_ = [], start_archive_datetime
     for step in range(archive_length_steps):
@@ -200,18 +184,19 @@ def archive(request):
     # Making datasets for Chartjs
     datasets = []
     for template in archive_templates:
-        
+
         archive_data = []
         for datetime_ in datetime_row:
             try:
                 archive_record = Archive.objects.get(
                     archive_template=template,
-                    record_datetime=datetime_).data_json[weather_parameter_index]
-            except Archive.DoesNotExist:
+                    record_datetime=datetime_).data_json[
+                        weather_parameter_index]
+            except (ObjectDoesNotExist, MultipleObjectsReturned):
                 archive_record = 'none'
-            
-            # if archive_record is None:
-            #     archive_record = 'none'
+
+            if not archive_record:
+                archive_record = 'none'
 
             archive_data.append(archive_record)
 
@@ -230,8 +215,8 @@ def archive(request):
         'datasets': datasets,
     }
 
-    last_database_refresh = Archive.objects.latest(
-        'scraped_datetime').scraped_datetime.strftime(
+    last_database_refresh = ForecastTemplate.objects.latest(
+        'last_scraped').last_scraped.strftime(
             "Database updated:  %d.%m.%Y %H:%M UTC")
 
     scales_list = ((-5, 5), (755, 765), (0, 10))
@@ -253,24 +238,12 @@ def archive(request):
         'forecast_sources': zip(FORECAST_SOURCES_NAMES, FORECAST_SOURCES_URLS),
     }
 
-    return render(request=request, template_name='website/archive.html', context=context)
+    return render(
+        request=request, template_name='website/archive.html', context=context)
 
 ########
 # MISC #
 ########
-
-
-def insert_empty_steps(data_list, symbol):
-    """Insert empty steps in data"""
-    new_data_list = []
-    for item in data_list:
-        if item is None:
-            new_data_list.append(symbol)
-        else:
-            new_data_list.append(item)
-        new_data_list.append(symbol)
-
-    return new_data_list
 
 
 def location_object_from_input(location):

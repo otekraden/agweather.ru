@@ -218,7 +218,7 @@ def archive(request):
             forecast_datetime__range=(datetime_row[0], datetime_row[-1]))
 
         if not forecasts:
-            prediction_range += 1
+            # prediction_range += 1
             continue
 
         forecast_data = []

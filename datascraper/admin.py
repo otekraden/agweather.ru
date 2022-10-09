@@ -269,3 +269,31 @@ class ArchiveTemplateAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request, obj=None):
         return False
+
+#############
+# FORECASTS #
+#############
+
+
+@admin.register(Forecast)
+class ForecastAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'forecast_template', 'scraped_datetime', 'forecast_datetime',
+        'prediction_range_hours', 'forecast_data')
+    readonly_fields = list_display
+
+    fields = list_display
+
+    list_filter = list_display
+
+    list_per_page = 15
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False

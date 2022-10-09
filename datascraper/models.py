@@ -20,6 +20,10 @@ class Location(models.Model):
     class Meta:
         unique_together = ('name', 'region', 'country')
 
+    # Getting local datetime at location
+    def local_datetime(self):
+        return timezone.localtime(timezone=zoneinfo.ZoneInfo(self.timezone))
+
     def __str__(self):
         return self.name
 
@@ -61,8 +65,7 @@ class ForecastTemplate(models.Model):
 
     # Getting local datetime at forecast location
     def local_datetime(self):
-        return timezone.localtime(
-            timezone=zoneinfo.ZoneInfo(self.location.timezone))
+        return self.location.local_datetime()
 
     # Calculating start forecast datetime
     def start_forecast_datetime(self):

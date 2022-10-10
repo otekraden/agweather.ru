@@ -55,21 +55,25 @@
             
             <!-- Heading -->
             <div class="sidebar-heading">
-                Weather view mode:
+                Select view mode:
             </div>
-            
+            {% with url_name=request.resolver_match.url_name %}
             <li class="nav-item">
-                <a class="nav-link" href="/forecast" >
+                <a class="nav-link" href="{% url 'website:forecast' %}" 
+                    {% if url_name == 'forecast' %} style="font-weight: bold; color:white" {% endif %}>
                     <i class="fas fa-chart-line"></i>
-                    <span>FORECASTS</span></a>
+                    <span>FORECAST</span></a>
             </li>
             
             <li class="nav-item">
-                <a class="nav-link" href="/archive" style="padding-top: 0;">
-                    <!-- <i class="fas fa-fw fa-table"></i> -->
+                <a class="nav-link" href="{% url 'website:archive' %}"
+                {% if url_name == 'archive' %} style="font-weight: bold; color:white; padding-top: 0" 
+                {% else %} style="padding-top: 0"
+                {% endif %}>
                     <i class="fas fa-archive" aria-hidden="true"></i>
                     <span>ARCHIVE</span></a>
             </li>
+            {% endwith %}
 
             <!-- Divider -->
             <hr class="sidebar-divider">

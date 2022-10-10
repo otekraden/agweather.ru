@@ -12,7 +12,7 @@
             {% csrf_token %}
             <div class="form-row">
                 <div class="form-group col-md-3 mb-2">
-                    <label for="location">Archive location:</label>
+                    <label for="location">Weather <b>ARCHIVE</b> at Location:</label>
                         <select class="form-control" id="location" name="location"
                             value="{{ location }}" onchange="submit();">
                             {% for loc in locations %}

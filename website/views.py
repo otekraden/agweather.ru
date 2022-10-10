@@ -206,8 +206,8 @@ def archive(request):
             'borderColor': template.archive_source.chart_color,
             'borderWidth': 1,
             'pointStyle': 'circle',
-            'pointRadius': 1,
-            'pointHoverRadius': 3,
+            'pointRadius': 3,
+            'pointHoverRadius': 10,
         })
 
     for template in forecast_templates:
@@ -240,6 +240,10 @@ def archive(request):
             'data': forecast_data,
             'borderColor': template.forecast_source.chart_color,
             'backgroundColor': template.forecast_source.chart_color,
+            'borderWidth': 0,
+            'pointStyle': 'triangle',
+            'pointRadius': 6,
+            'pointHoverRadius': 12,
         })
 
     chartjs_data = {

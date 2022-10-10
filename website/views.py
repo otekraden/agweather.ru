@@ -115,6 +115,7 @@ def forecast(request):
         'chartjs_options': chartjs_options,
         'chartjs_data': chartjs_data,
         'forecast_sources': zip(FORECAST_SOURCES_NAMES, FORECAST_SOURCES_URLS),
+        'timezone': start_forecast_datetime.tzinfo,
         }
 
     return render(
@@ -273,6 +274,7 @@ def archive(request):
         'chartjs_data': chartjs_data,
         'chartjs_options': chartjs_options,
         'forecast_sources': zip(FORECAST_SOURCES_NAMES, FORECAST_SOURCES_URLS),
+        'timezone': timezone_info,
     }
 
     return render(

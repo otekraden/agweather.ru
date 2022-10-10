@@ -10,6 +10,19 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
+    <!-- Digital Clock on the page top -->
+    <script data-timezone="{{ timezone }}">
+        const data = document.currentScript.dataset;
+        const timezone = data.timezone;
+        window.onload = function DClock() {
+            var date = new Date();
+            date = date.toLocaleString('ru-RU', { timeZone: timezone, timeZoneName: 'short' });
+            date = date.replace(',', ' ');
+            document.getElementById("clock").innerHTML = date;
+            setTimeout(DClock);
+        };
+    </script>
+
     <title>AG Weather</title>
 
     <!-- Custom fonts for this template-->
@@ -33,8 +46,7 @@
 
 </head>
 
-
-<body id="page-top" onload="digitalClock();">
+<body id="page-top">
 
     <!-- Page Wrapper -->
     <div id="wrapper">

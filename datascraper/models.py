@@ -100,8 +100,6 @@ class ForecastTemplate(models.Model):
 
             local_datetime = template.local_datetime()
             logger.debug(f'LDT: {local_datetime}')
-            template.last_scraped = local_datetime
-            template.save()
 
             start_forecast_datetime = template.start_forecast_datetime()
             logger.debug(f'SFDT: {start_forecast_datetime}')
@@ -115,6 +113,8 @@ class ForecastTemplate(models.Model):
             try:
                 scraped_forecasts = scraper_func(
                     start_forecast_datetime, forecast_url)
+                template.last_scraped = local_datetime
+                template.save()
 
             except Exception as e:
 

@@ -30,18 +30,25 @@ class Command(BaseCommand):
             myzip.write(filename)
 
         load_dotenv()
-        yandex = yadisk.YaDisk(token=os.environ["YANDEX_TOKEN"])
-        yandex.upload(f'{filename}.zip',
-                      f'agweather_dump_db/{filename}.zip')
 
-        token = os.environ["TELEGRAM_TOKEN"]
-        users = os.environ["TELEGRAM_USERS"].split('\n')
-        tg_files_logger = tg_logger.TgFileLogger(
-            token=token,
-            users=users,
-            timeout=10
-        )
-        tg_files_logger.send(f'{filename}.zip')
+        try:
+            yandex = yadisk.YaDisk(token=os.environ["YANDEX_TOKEN"])
+            yandex.upload(f'{filename}.zip',
+                          f'agweather_dump_db/{filename}.zip')
+        except Exception as e:
+            logger.error(e)
+
+        try:
+            token = os.environ["TELEGRAM_TOKEN"]
+            users = os.environ["TELEGRAM_USERS"].split('\n')
+            tg_files_logger = tg_logger.TgFileLogger(
+                token=token,
+                users=users,
+                timeout=10
+            )
+            tg_files_logger.send(f'{filename}.zip')
+        except Exception as e:
+            logger.error(e)
 
         os.remove(filename)
         os.remove(f'{filename}.zip')

@@ -134,9 +134,9 @@ def archive(request):
         weather_parameter = WEATHER_PARAMETERS[0]
         # Default one week
         archive_length = 7
-
-        prediction_range = 1
-
+        # Default 24h
+        prediction_range = 24
+        # Default today
         period_end_date = datetime.now().strftime("%d/%m/%Y")
 
     elif request.method == 'POST':

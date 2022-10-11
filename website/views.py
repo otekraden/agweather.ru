@@ -8,7 +8,8 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 
 
-WEATHER_PARAMETERS = [par.name for par in WeatherParameter.objects.all()]
+WEATHER_PARAMETERS = [
+    f'{par.name}, {par.meas_unit}' for par in WeatherParameter.objects.all()]
 LOCATIONS = [f'{loc.name}, {loc.region}, {loc.country}'
              for loc in Location.objects.all()]
 FORECAST_SOURCES_URLS = [source.url for source in ForecastSource.objects.all()]

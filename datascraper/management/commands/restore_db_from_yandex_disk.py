@@ -22,10 +22,16 @@ class Command(BaseCommand):
         logger.debug(f'Last dump file detected: {last_dump_file_name}')
         last_dump_file.download(last_dump_file_name)
 
-        # with zipfile.ZipFile(last_dump_file_name, 'r') as myzip:
-        #     myzip.extractall('')
-
-        management.call_command("loaddata", last_dump_file_name, verbosity=0)
+        management.call_command(
+            "loaddata",
+            last_dump_file_name,
+            "--exclude",
+            "auth.permission",
+            "--exclude",
+            "contenttypes",
+            "--exclude",
+            "auth.user",
+            verbosity=0)
         os.remove(last_dump_file_name)
 
         logger.debug("Data successfully loaded from dump file.")

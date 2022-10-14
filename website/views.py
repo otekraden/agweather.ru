@@ -96,9 +96,9 @@ def forecast(request):
         'datasets': datasets,
     }
 
-    last_database_refresh = Forecast.objects.latest(
-        'scraped_datetime').scraped_datetime.strftime(
-        "Database updated:  %d.%m.%Y %H:%M UTC")
+    last_database_refresh = ForecastTemplate.objects.latest(
+        'last_scraped').last_scraped.strftime(
+            "Database updated:  %d.%m.%Y %H:%M UTC")
 
     scales_list = ((-5, 5), (755, 765), (0, 10))
     chartjs_options = {'suggestedMin': scales_list[weather_parameter_index][0],

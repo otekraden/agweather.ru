@@ -197,7 +197,7 @@ def archive(request):
             except (ObjectDoesNotExist, MultipleObjectsReturned):
                 archive_record = 'none'
 
-            if not archive_record:
+            if not archive_record and archive_record != 0:
                 archive_record = 'none'
 
             archive_data.append(archive_record)
@@ -232,7 +232,7 @@ def archive(request):
             except (ObjectDoesNotExist, MultipleObjectsReturned):
                 forecast_record = 'none'
 
-            if not forecast_record:
+            if not forecast_record and forecast_record != 0:
                 forecast_record = 'none'
 
             forecast_data.append(forecast_record)

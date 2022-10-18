@@ -74,7 +74,7 @@ def forecast(request):
             except (ObjectDoesNotExist, MultipleObjectsReturned):
                 forecast_record = 'none'
 
-            if not forecast_record:
+            if not forecast_record and forecast_record != 0:
                 forecast_record = 'none'
 
             forecast_data.append(forecast_record)

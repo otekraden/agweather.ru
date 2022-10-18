@@ -28,7 +28,7 @@ def rp5(start_forecast_datetime, url):
     start_date_from_source = ftab.find(
         'span', class_="weekDay").get_text().split(',')[-1].split()
     start_date_from_source = func_start_date_from_source(
-        month=month_rusname_to_number(start_date_from_source[1][:3]),
+        month=month_name_to_number(start_date_from_source[1][:3]),
         day=int(start_date_from_source[0]),
         req_start_datetime=start_forecast_datetime
     )
@@ -78,7 +78,7 @@ def yandex(start_forecast_datetime, url):
     date_tags = ftab[0].find('p').find_all('span')
 
     start_date_from_source = func_start_date_from_source(
-        month=month_rusname_to_number(date_tags[2].get_text()),
+        month=month_name_to_number(date_tags[2].get_text()),
         day=int(date_tags[0].get_text()),
         req_start_datetime=start_forecast_datetime
     )
@@ -125,7 +125,7 @@ def meteoinfo(start_forecast_datetime, url):
     start_hour = 15 if start_hour.strip().lower() == 'день' else 3
     start_date_from_source = start_date_from_source.get_text()
     start_date_from_source = func_start_date_from_source(
-        month=month_rusname_to_number(start_date_from_source),
+        month=month_name_to_number(start_date_from_source),
         day=int(re.findall(r'\d+', start_date_from_source)[0]),
         req_start_datetime=start_forecast_datetime
     )
@@ -165,7 +165,7 @@ def foreca(start_forecast_datetime, url: str):
     # Parsing start date from source html page
     start_date_from_source = ftab.find('div', class_='date').get_text().split()
     start_date_from_source = func_start_date_from_source(
-        month=month_rusname_to_number(start_date_from_source[1][:3]),
+        month=month_name_to_number(start_date_from_source[1][:3]),
         day=int(start_date_from_source[0]),
         req_start_datetime=start_forecast_datetime
     )
@@ -265,14 +265,18 @@ def func_start_date_from_source(month, day, req_start_datetime):
     return datetime(year, month, day, tzinfo=req_start_datetime.tzinfo)
 
 
-def month_rusname_to_number(name):
-    """Translate russian month name to its number."""
-    month_tuple = ('', 'янв', 'фев', 'мар', 'апр', 'мая', 'июн',
-                   'июл', 'авг', 'сен', 'окт', 'ноя', 'дек')
+def month_name_to_number(name):
+    """Translate month name to its number."""
     name = name.strip().lower().split(' ')[-1][:3]
+
     if name == 'май':
         return 5
-    return month_tuple.index(name)
+
+    month_tuple = ('', 'янв', 'фев', 'мар', 'апр', 'мая', 'июн',  # RUS
+                   'июл', 'авг', 'сен', 'окт', 'ноя', 'дек',
+                   '', 'jan', 'feb', 'mar', 'apr', 'may', 'jun',  # ENG
+                   'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
+    return month_tuple.index(name) % 12
 
 
 def generate_forecasts(

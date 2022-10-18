@@ -1,5 +1,5 @@
 # from selenium.webdriver.common.by import By
-from datascraper.forecasts import month_rusname_to_number, get_soup
+from datascraper.forecasts import month_name_to_number, get_soup
 from datetime import datetime, timedelta
 import re
 
@@ -35,7 +35,7 @@ def arch_rp5(start_datetime: datetime, url, end_datetime=None):
             get_text().replace('г.', ' ').replace(',', ' ').split()[:-1]
         start_date_from_source = start_datetime.replace(
                 year=int(start_date_from_source[0]),
-                month=month_rusname_to_number(start_date_from_source[2]),
+                month=month_name_to_number(start_date_from_source[2]),
                 day=int(start_date_from_source[1]),
                 hour=0)
 

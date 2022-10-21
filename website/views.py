@@ -21,19 +21,23 @@ def forecast(request):
 
     if request.method == 'GET':
         # Default location Saint-Petersburg
-        location = LOCATIONS[4]
+        location = request.session.get('location', LOCATIONS[1])
         # Default show Temperature
-        weather_parameter = WEATHER_PARAMETERS[0]
+        weather_parameter = request.session.get(
+            'weather_parameter', WEATHER_PARAMETERS[0])
         # Default one week
-        forecast_length = 7
+        selection_period = request.session.get('selection_period', 7)
 
     elif request.method == 'POST':
         location = request.POST.get('location')
+        request.session['location'] = location
         weather_parameter = request.POST.get('weather_parameter')
-        forecast_length = request.POST.get('forecast_length')
+        request.session['weather_parameter'] = weather_parameter
+        selection_period = request.POST.get('selection_period')
+        request.session['selection_period'] = selection_period
 
-    forecast_length = check_int_input(forecast_length, 1, 14, 7)
-    forecast_length_steps = forecast_length*24
+    selection_period = check_int_input(selection_period, 1, 14, 7)
+    forecast_length_steps = selection_period*24
 
     weather_parameter_index = WEATHER_PARAMETERS.index(weather_parameter)
 
@@ -112,7 +116,7 @@ def forecast(request):
         'location': location,
         'weather_parameters': WEATHER_PARAMETERS,
         'weather_parameter': weather_parameter,
-        'forecast_length': forecast_length,
+        'selection_period': selection_period,
         'chartjs_options': chartjs_options,
         'chartjs_data': chartjs_data,
         'forecast_sources': zip(FORECAST_SOURCES_NAMES, FORECAST_SOURCES_URLS),
@@ -130,11 +134,12 @@ def archive(request):
 
     if request.method == 'GET':
         # Default location Saint-Petersburg
-        location = LOCATIONS[4]
+        location = request.session.get('location', LOCATIONS[1])
         # Default show Temperature
-        weather_parameter = WEATHER_PARAMETERS[0]
+        weather_parameter = request.session.get(
+            'weather_parameter', WEATHER_PARAMETERS[0])
         # Default one week
-        archive_length = 7
+        selection_period = request.session.get('selection_period', 7)
         # Default 24h
         prediction_range = 24
         # Default today
@@ -142,13 +147,16 @@ def archive(request):
 
     elif request.method == 'POST':
         location = request.POST.get('location')
+        request.session['location'] = location
         weather_parameter = request.POST.get('weather_parameter')
-        archive_length = request.POST.get('archive_length')
+        request.session['weather_parameter'] = weather_parameter
+        selection_period = request.POST.get('selection_period')
+        request.session['selection_period'] = selection_period
         period_end_date = request.POST.get('period_end_date')
         prediction_range = request.POST.get('prediction_range')
 
-    archive_length = check_int_input(archive_length, 1, 30, 14)
-    archive_length_steps = archive_length*24
+    selection_period = check_int_input(selection_period, 1, 30, 14)
+    archive_length_steps = selection_period*24
 
     prediction_range = check_int_input(prediction_range, 1, 336, 1)
 
@@ -269,7 +277,7 @@ def archive(request):
         'location': location,
         'weather_parameters': WEATHER_PARAMETERS,
         'weather_parameter': weather_parameter,
-        'archive_length': archive_length,
+        'selection_period': selection_period,
         'period_end_date': period_end_date,
         'prediction_range': prediction_range,
         'chartjs_data': chartjs_data,

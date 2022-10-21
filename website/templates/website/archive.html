@@ -31,17 +31,17 @@
                 </div>
 
                 <div class="form-group col-md-2 mb-0">
+                    <label for="selection_period">Selection period, days:</label>
+                    <input id='selection_period' type="number" min="1" max="30" class="form-control"
+                        placeholder="Insert number of days" {% if selection_period %} value="{{ selection_period }}" 
+                        {% endif %} name="selection_period" onchange="submit();">
+                </div>
+
+                <div class="form-group col-md-2 mb-0">
                     <label for="prediction_range">Prediction range, hours:</label>
                     <input id='prediction_range' type="number" min="1" max="336" class="form-control"
                         placeholder="Insert number of hours" {% if prediction_range %} value="{{ prediction_range }}" 
                         {% endif %} name="prediction_range" onchange="submit();">
-                </div>
-
-                <div class="form-group col-md-2 mb-0">
-                    <label for="archive_length">Selection period, days:</label>
-                    <input id='archive_length' type="number" min="1" max="30" class="form-control"
-                        placeholder="Insert number of days" {% if archive_length %} value="{{ archive_length }}" 
-                        {% endif %} name="archive_length" onchange="submit();">
                 </div>
 
                 <div class="form-group col-md-2 mb-0">

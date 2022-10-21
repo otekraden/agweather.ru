@@ -111,18 +111,26 @@
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
             
-            <!-- Nav Item - Tables -->
+            <!-- Nav Item - Feedback -->
             <li class="nav-item">
                 <a class="nav-link" href="/feedback">
                     <i class="far fa-comment-alt"></i>
                     <span>Your Feedback</span></a>
             </li>
 
-            <!-- Nav Item - Dashboard -->
+            <!-- Nav Item - About -->
             <li class="nav-item">
                 <a class="nav-link" href="/about">
                     <i class="fas fa-sticky-note"></i>
                     <span>About this site</span></a>
+            </li>
+
+            <!-- Nav Item - Source Code -->
+            <li class="nav-item">
+                <a class="nav-link" href="https://github.com/venom812/agweather.online">
+                    <i class="fab fa-github"></i>
+                    <span>Source Code</span></a>
+                    
             </li>
 
             <!-- Divider -->
@@ -155,33 +163,34 @@
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 
-                        <!-- Nav Item - My Information -->
+                        <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline"> <strong>Designed by:</strong> Anton</span>
+                                <span class="mr-2 d-none d-lg-inline">Douglas McGee</span>
                                 <img class="img-profile rounded-circle"
-                                    src="{% static 'website/img/undraw_profile.svg' %}">
+                                src="{% static 'website/img/undraw_profile.svg' %}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown" style="min-width: 8rem;">
-                                <a class="dropdown-item" href="https://github.com/Venom812">
-                                    <!-- <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> -->
-                                    <img height="19" width="19" src='http://www.google.com/s2/favicons?domain=www.github.com'/>
-                                    GitHub
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Profile
                                 </a>
                                 <a class="dropdown-item" href="#">
-                                    <!-- <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i> -->
-                                    <img height="19" width="19" src='http://www.google.com/s2/favicons?domain=www.linkedin.com'/>
-                                    LinkedIn
+                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Settings
                                 </a>
-                                <!-- <div class="dropdown-divider"></div> -->
-                                <!-- <a class="dropdown-item" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Activity Log
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
-                                </a> -->
-
+                                </a>
                             </div>
                         </li>
 

@@ -6,10 +6,10 @@
 
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4" style="margin-bottom: 0 !important;">
-        <form id="form" class="p-3" action='' method="POST">
+        <form id="form" class="p-3 w-100" action='' method="POST">
             {% csrf_token %}
             <div class="form-row">
-                <div class="form-group col-md-6 mb-2">
+                <div class="form-group col-md-3 mb-2">
                     <label for="location">Weather <b>FORECAST</b> at Location:</b></label>
                         <select class="form-control" id="location" name="location"
                             value="{{ location }}" onchange="submit();">
@@ -18,7 +18,7 @@
                             {% endfor %}
                         </select>
                 </div>
-                <div class="form-group col-md-3 mb-0">
+                <div class="form-group col-md-2 mb-0">
                     <label for="weather_parameter">Weather parameter:</label>
                         <select class="form-control" id="weather_parameter" name="weather_parameter"
                             value="{{ weather_parameter }}" onchange="submit();">
@@ -27,11 +27,11 @@
                             {% endfor %}
                         </select>
                 </div>
-                <div class="form-group col-md-3 mb-0">
-                    <label for="forecast_length">Forecast period, days:</label>
-                    <input id='forecast_length' type="number" min="1" max="14" class="form-control"
-                        placeholder="Insert number of days" {% if forecast_length %} value="{{ forecast_length }}" 
-                        {% endif %} name="forecast_length" onchange="submit();">
+                <div class="form-group col-md-2 mb-0">
+                    <label for="selection_period">Selection period, days:</label>
+                    <input id='selection_period' type="number" min="1" max="14" class="form-control"
+                        placeholder="Insert number of days" {% if selection_period %} value="{{ selection_period }}" 
+                        {% endif %} name="selection_period" onchange="submit();">
                 </div>
             </div>
 

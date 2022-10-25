@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from datascraper.models import (
     WeatherParameter, Location, ForecastTemplate, Forecast, ForecastSource,
@@ -6,6 +6,9 @@ from datascraper.models import (
 from backports import zoneinfo
 from django.utils import timezone
 from datetime import timedelta, datetime
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import Group
 
 
 WEATHER_PARAMETERS = [
@@ -309,3 +312,21 @@ def check_int_input(value, min, max, default):
     elif value < min:
         value = min
     return value
+
+########
+# AUTH #
+########
+
+
+def signup(request):
+    form = UserCreationForm(request.POST)
+    if form.is_valid():
+        form.save()
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = authenticate(username=username, password=password)
+        group = Group.objects.get(name='Test Group')
+        group.user_set.add(user)
+        login(request, user)
+        return redirect('website:forecast')
+    return render(request, 'website/signup.html', {'form': form})

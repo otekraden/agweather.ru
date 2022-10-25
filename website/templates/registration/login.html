@@ -2,36 +2,48 @@
 
 {% block content %}
 
-  {% if form.errors %}
-    <p>Your username and password didn't match. Please try again.</p>
+{% if form.errors %}
+  <p>Your username and password didn't match. Please try again.</p>
+{% endif %}
+
+{% if next %}
+  {% if user.is_authenticated %}
+    <p>Your account doesn't have access to this page. To proceed,
+    please login with an account that has access.</p>
+  {% else %}
+    <p>Please login to see this page.</p>
   {% endif %}
+{% endif %}
 
-  {% if next %}
-    {% if user.is_authenticated %}
-      <p>Your account doesn't have access to this page. To proceed,
-      please login with an account that has access.</p>
-    {% else %}
-      <p>Please login to see this page.</p>
-    {% endif %}
-  {% endif %}
-
-  <form method="post" action="{% url 'login' %}">
-    {% csrf_token %}
-    <table>
-      <tr>
-        <td>{{ form.username.label_tag }}</td>
-        <td>{{ form.username }}</td>
-      </tr>
-      <tr>
-        <td>{{ form.password.label_tag }}</td>
-        <td>{{ form.password }}</td>
-      </tr>
-    </table>
-    <input type="submit" value="login">
-    <input type="hidden" name="next" value="{{ next }}">
-  </form>
-
-  {# Assumes you setup the password_reset view in your URLconf #}
-  <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+<div class="row justify-content-left">
+  <div class="col-xl-5 col-lg-6 col-md-4">
+    <div class="card-body p-0">
+      <div class="p-5">
+        <div class="text-center">
+          <h1 class="h4 text-gray-400 mb-4">Welcome Back!</h1>
+        </div>
+        <form class="user" method="post" action="{% url 'login' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <input type="text" name="username" class="form-control form-control-user" autofocus="" autocapitalize="none"
+              autocomplete="username" maxlength="150" required="" id="id_username" placeholder="Username">
+          </div>
+          <div class="form-group">
+            <input type="password" name="password" class="form-control form-control-user"
+              autocomplete="current-password" required="" id="id_password" placeholder="Password">
+          </div>
+          <input class="btn btn-primary btn-user btn-block" type="submit" value="Login">
+        </form>
+        <hr>
+        <div class="text-center">
+          <a class="small" href="{% url 'password_reset' %}">Forgot Password?</a>
+        </div>
+        <div class="text-center">
+          <a class="small" href="{% url 'website:signup' %}">Create an Account!</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

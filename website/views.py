@@ -9,6 +9,7 @@ from datetime import timedelta, datetime
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
+from .forms import SignUpForm
 
 
 WEATHER_PARAMETERS = [
@@ -313,13 +314,14 @@ def check_int_input(value, min, max, default):
         value = min
     return value
 
-########
-# AUTH #
-########
+###########
+# SIGN UP #
+###########
 
 
 def signup(request):
-    form = UserCreationForm(request.POST)
+    # form = UserCreationForm(request.POST)
+    form = SignUpForm(request.POST)
     if form.is_valid():
         form.save()
         username = form.cleaned_data.get('username')

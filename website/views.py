@@ -7,7 +7,6 @@ from backports import zoneinfo
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
 from .forms import SignUpForm
 
@@ -320,15 +319,22 @@ def check_int_input(value, min, max, default):
 
 
 def signup(request):
-    # form = UserCreationForm(request.POST)
-    form = SignUpForm(request.POST)
-    if form.is_valid():
-        form.save()
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password1')
-        user = authenticate(username=username, password=password)
-        group = Group.objects.get(name='Test Group')
-        group.user_set.add(user)
-        login(request, user)
-        return redirect('website:forecast')
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.refresh_from_db()
+            # load the profile instance created by the signal
+            user.save()
+            raw_password = form.cleaned_data.get('password1')
+            # login user after signing up
+            user = authenticate(username=user.username, password=raw_password)
+            login(request, user)
+            group = Group.objects.get(name='Test Group')
+            group.user_set.add(user)
+
+            # redirect user to home page
+            return redirect('website:forecast')
+    else:
+        form = SignUpForm()
     return render(request, 'website/signup.html', {'form': form})

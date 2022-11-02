@@ -1,42 +1,32 @@
-{% extends "website/base.html" %}
+{% extends "website/base_container.html" %}
 
-{% block content %}
+{% block inner_content %}
 
-<div class="container">
-  <div class="row justify-content-center">
-    <div class="col-xl-5 col-lg-6 col-md-4">
-      <div class="card-body p-0">
-        <div class="p-5">
-          <div class="text-center">
-            {% if form.errors %}
-              <p class="h6 mb-4" style="color: red">Your username and/or password didn't match. Please try again.</p>
-            {% else %}
-              <p class="h6 text-gray-400 mb-4">Welcome Back!</p>
-            {% endif %}
-          </div>
-          <form class="user" method="post">
-            {% csrf_token %}
-            <div class="form-group">
-              <input type="text" name="username" class="form-control" autofocus="" autocapitalize="none"
-                autocomplete="username" maxlength="150" required="" id="id_username" placeholder="Username">
-            </div>
-            <div class="form-group">
-              <input type="password" name="password" class="form-control"
-                autocomplete="current-password" required="" id="id_password" placeholder="Password">
-            </div>
-            <input class="btn btn-primary btn-block" type="submit" value="Login">
-          </form>
-          <hr>
-          <div class="text-center">
-            <a class="small" style="font-size: 100%" href="{% url 'password_reset' %}">Forgot Password?</a>
-          </div>
-          <div class="text-center p-2">
-            <a class="small" style="font-size: 100%" href="{% url 'website:signup' %}">Create an Account!</a>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="text-center">
+    {% if form.errors %}
+      <p class="h6 mb-4" style="color: red">Your username and/or password didn't match. Please try again.</p>
+    {% else %}
+      <p class="h6 text-gray-400 mb-4">Welcome Back!</p>
+    {% endif %}
   </div>
-</div>
+  <form class="user" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <input type="text" name="username" class="form-control" autofocus="" autocapitalize="none"
+        autocomplete="username" maxlength="150" required="" id="id_username" placeholder="Username">
+    </div>
+    <div class="form-group">
+      <input type="password" name="password" class="form-control"
+        autocomplete="current-password" required="" id="id_password" placeholder="Password">
+    </div>
+    <input class="btn btn-primary btn-block" type="submit" value="Login">
+  </form>
+  <hr>
+  <div class="text-center">
+    <a class="small" style="font-size: 100%" href="{% url 'password_reset' %}">Forgot Password?</a>
+  </div>
+  <div class="text-center p-2">
+    <a class="small" style="font-size: 100%" href="{% url 'website:signup' %}">Create an Account!</a>
+  </div>
 
 {% endblock %}

@@ -8,7 +8,12 @@ from .models import Profile
 
 
 @admin.register(Profile)
-class WeatherParameterAdmin(admin.ModelAdmin):
+class ProfileAdmin(admin.ModelAdmin):
 
-    list_display = ('user', 'first_name', 'last_name', 'email')
-    fields = ('first_name', 'last_name', 'email', 'bio')
+    list_display = ('bio', 'location', 'birth_date') #, 'test')
+    fields = ('bio', 'location', 'birth_date') #, 'test')
+    # readonly_fields = ('test',)
+
+    # def test(self, obj):
+
+    #     return obj.first_name

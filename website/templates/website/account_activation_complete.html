@@ -1,0 +1,8 @@
+{% extends "website/base_container.html" %}
+
+{% block inner_content %}
+	<div class="text-center">
+		<p class="text-gray-400 mb-4">Thank you for your email confirmation!</p>
+		<a href="{% url 'login'%}">Click here to login the account you created.</a>
+	</div>
+{% endblock %}

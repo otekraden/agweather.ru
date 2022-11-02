@@ -1,18 +1,8 @@
-{% extends "website/base.html" %}
+{% extends "website/base_container.html" %}
 
-{% block content %}
-
-<div class="row justify-content-center">
-  <div class="col-xl-5 col-lg-6 col-md-4">
-    <div class="card-body p-0">
-      <div class="p-5">
-        <div class="text-center">
-          <p class="text-gray-400 mb-4">You are logged out!</p>
-          <a href="{% url 'login'%}">Click here to login again.</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
+{% block inner_content %}
+	<div class="text-center">
+		<p class="text-gray-400 mb-4">You are logged out!</p>
+		<a href="{% url 'login'%}">Click here to login again.</a>
+	</div>
 {% endblock %}

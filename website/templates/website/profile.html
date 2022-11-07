@@ -11,11 +11,12 @@
             <h2 class="card-title my-3">{{ user.username }}</h2>
             <p>First name: {{ user.first_name }} </p>
             <p>Last name: {{ user.last_name }} </p>
-            <p>Email: {{ user.email }} </p>
           </div>
         </div>
+      <p>Email: {{ user.email }} </p>
       <p>Last login on: {{ user.last_login }}</p>
       <p class="card-text">About me: {{ user.profile.bio }}</p>
+      <p class="card-text">Favorite location: {{ user.profile.favorite_location }}</p>
       </div>
     </div>
   </div>

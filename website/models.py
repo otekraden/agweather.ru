@@ -3,12 +3,14 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from PIL import Image
+from datascraper.models import Location
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=30, blank=True)
+    favorite_location = models.ForeignKey(
+        Location, on_delete=models.DO_NOTHING, default=1)
     avatar = models.ImageField(
         default='avatar.jpg',  # default avatar
         upload_to='profile_avatars'  # dir to store the image

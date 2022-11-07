@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from datascraper.models import (
     WeatherParameter, Location, ForecastTemplate, Forecast, ForecastSource,
@@ -15,6 +15,8 @@ from .tokens import account_activation_token
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.contrib.auth.decorators import login_required
+from .models import User, Profile
 
 
 WEATHER_PARAMETERS = [
@@ -367,3 +369,13 @@ def activate(request, uidb64, token):
         return render(request, 'website/account_activation_complete.html')
     else:
         return render(request, 'website/account_activation_error.html')
+
+
+@login_required
+def profile(request, username):
+    user = get_object_or_404(User, username=username)
+    if request.user.username == username:
+        profile = get_object_or_404(Profile, user=user)
+        return render(request, 'website/profile.html', {'profile': profile, 'user': user})
+    else:
+        return redirect("/accounts/login/")

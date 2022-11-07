@@ -10,8 +10,8 @@ from .models import Profile
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
 
-    list_display = ('bio', 'location', 'birth_date') #, 'test')
-    fields = ('bio', 'location', 'birth_date') #, 'test')
+    list_display = ('user', 'bio', 'location', 'avatar')
+    fields = ('user', 'bio', 'location', 'avatar')
     # readonly_fields = ('test',)
 
     # def test(self, obj):

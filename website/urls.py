@@ -10,5 +10,6 @@ urlpatterns = [
     path('forecast/', views.forecast, name="forecast"),
     path('archive/', views.archive, name="archive"),
     path('signup/', views.signup, name="signup"),
-    path('activate/(<uidb64>/<token>', views.activate, name='activate'), 
+    path('activate/(<uidb64>/<token>', views.activate, name='activate'),
+    path('profile/<username>/', views.profile, name='profile'),
 ]

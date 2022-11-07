@@ -2,19 +2,33 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from PIL import Image
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    # first_name = models.CharField(max_length=100, blank=True)
-    # last_name = models.CharField(max_length=100, blank=True)
-    # email = models.EmailField(max_length=150)
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
-    birth_date = models.DateField(null=True, blank=True)
+    avatar = models.ImageField(
+        default='avatar.jpg',  # default avatar
+        upload_to='profile_avatars'  # dir to store the image
+    )
 
     def __str__(self):
         return self.user.username
+    
+    def save(self, *args, **kwargs):
+        # save the profile first
+        super().save(*args, **kwargs)
+
+        # resize the image
+        img = Image.open(self.avatar.path)
+        if img.height > 300 or img.width > 300:
+            output_size = (300, 300)
+            # create a thumbnail
+            img.thumbnail(output_size)
+            # overwrite the larger image
+            img.save(self.avatar.path)
 
 
 @receiver(post_save, sender=User)
@@ -23,9 +37,9 @@ def create_user_profile(sender, instance, created, **kwargs):
         Profile.objects.create(user=instance)
 
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#     instance.profile.save()
 
 
 User._meta.get_field('email')._unique = True

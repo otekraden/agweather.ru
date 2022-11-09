@@ -1,19 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
-# from .models import Profile
+from .models import Profile
 from django.contrib.auth.forms import UserCreationForm
-
-
-# class SignUpForm(UserCreationForm):
-#     first_name = forms.CharField(max_length=100, help_text='First Name')
-#     last_name = forms.CharField(max_length=100, help_text='Last Name')
-#     email = forms.EmailField(max_length=150, help_text='Email')
-
-#     class Meta:
-#         model = User
-#         fields = (
-#             'username', 'first_name', 'last_name',
-#             'email', 'password1', 'password2',)
 
 
 class SignUpForm(UserCreationForm):
@@ -24,7 +12,17 @@ class SignUpForm(UserCreationForm):
             'email', 'password1', 'password2',)
 
 
-# class ProfileForm(forms.ModelForm):
-#     class Meta:
-#         model = Profile
-#         fields = ('bio', 'location', 'birth_date',)
+class EditProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ('about_me', 'avatar', 'favorite_location')
+        widgets = {
+            'favorite_location': forms.Select(attrs={'class': 'form-control'}),
+            # 'avatar': forms.Input(attrs={'class': 'form-control'}),
+        }
+
+
+class EditUserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name',)

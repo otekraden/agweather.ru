@@ -2,16 +2,16 @@ from django.contrib import admin
 from .models import Profile
 
 
-######################
-# WEATHER PARAMETERS #
-######################
+################
+# USER PROFILE #
+################
 
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
 
-    list_display = ('user', 'bio', 'favorite_location', 'avatar')
-    fields = ('user', 'bio', 'favorite_location', 'avatar')
+    list_display = ('user', 'favorite_location', 'avatar')
+    fields = ('user', 'about_me', 'favorite_location', 'avatar')
     # readonly_fields = ('test',)
 
     # def test(self, obj):

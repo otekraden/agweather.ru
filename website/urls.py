@@ -11,5 +11,7 @@ urlpatterns = [
     path('archive/', views.archive, name="archive"),
     path('signup/', views.signup, name="signup"),
     path('activate/(<uidb64>/<token>', views.activate, name='activate'),
-    path('profile/<username>/', views.profile, name='profile'),
+    path('profile/', views.profile, name='profile'),
+    path('edit_user_profile/', views.edit_user_profile,
+         name='edit_user_profile'),
 ]

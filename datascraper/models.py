@@ -25,7 +25,7 @@ class Location(models.Model):
         return timezone.localtime(timezone=zoneinfo.ZoneInfo(self.timezone))
 
     def __str__(self):
-        return self.name
+        return f'{self.name}, {self.region}, {self.country}'
 
 
 class WeatherParameter(models.Model):

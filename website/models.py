@@ -8,7 +8,7 @@ from datascraper.models import Location
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(max_length=500, blank=True)
+    about_me = models.TextField(max_length=500, blank=True)
     favorite_location = models.ForeignKey(
         Location, on_delete=models.DO_NOTHING, default=1)
     avatar = models.ImageField(

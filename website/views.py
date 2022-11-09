@@ -7,7 +7,7 @@ from backports import zoneinfo
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.contrib.auth.models import Group
-from .forms import SignUpForm
+from .forms import SignUpForm, EditProfileForm, EditUserForm
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -21,8 +21,7 @@ from .models import User, Profile
 
 WEATHER_PARAMETERS = [
     f'{par.name}, {par.meas_unit}' for par in WeatherParameter.objects.all()]
-LOCATIONS = [f'{loc.name}, {loc.region}, {loc.country}'
-             for loc in Location.objects.all()]
+LOCATIONS = tuple(map(str, Location.objects.all()))
 FORECAST_SOURCES_URLS = [source.url for source in ForecastSource.objects.all()]
 FORECAST_SOURCES_NAMES = [
     source.name for source in ForecastSource.objects.all()]
@@ -32,7 +31,7 @@ def forecast(request):
 
     if request.method == 'GET':
         # Default location Saint-Petersburg
-        location = request.session.get('location', LOCATIONS[1])
+        location = request.session.get('location', default_location(request))
         # Default show Temperature
         weather_parameter = request.session.get(
             'weather_parameter', WEATHER_PARAMETERS[0])
@@ -145,7 +144,7 @@ def archive(request):
 
     if request.method == 'GET':
         # Default location Saint-Petersburg
-        location = request.session.get('location', LOCATIONS[1])
+        location = request.session.get('location', default_location(request))
         # Default show Temperature
         weather_parameter = request.session.get(
             'weather_parameter', WEATHER_PARAMETERS[0])
@@ -321,6 +320,13 @@ def check_int_input(value, min, max, default):
         value = min
     return value
 
+
+def default_location(request):
+    if request.user.is_authenticated:
+        return str(Profile.objects.get(
+            user=request.user).favorite_location)
+    return LOCATIONS[1]
+
 ##################
 # AUTHENTICATION #
 ##################
@@ -372,10 +378,32 @@ def activate(request, uidb64, token):
 
 
 @login_required
-def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    if request.user.username == username:
-        profile = get_object_or_404(Profile, user=user)
-        return render(request, 'website/profile.html', {'profile': profile, 'user': user})
-    else:
-        return redirect("/accounts/login/")
+def profile(request):
+    user = get_object_or_404(User, username=request.user.username)
+    profile = get_object_or_404(Profile, user=user)
+    return render(request, 'website/user_profile.html',
+                  {'profile': profile, 'user': user})
+
+
+@login_required
+def edit_user_profile(request):
+    user = get_object_or_404(User, username=request.user.username)
+    profile = get_object_or_404(Profile, user=user)
+
+    if request.method == 'POST':
+        user_form = EditUserForm(request.POST, instance=user)
+        profile_form = EditProfileForm(
+            request.POST, request.FILES, instance=profile)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect('website:profile')
+
+    elif request.method == 'GET':
+        user_form = EditUserForm(instance=user)
+        profile_form = EditProfileForm(instance=profile)
+
+    return render(request, 'website/edit_user_profile.html',
+                  {'user_form': user_form, 'profile_form': profile_form,
+                   'locations': LOCATIONS,
+                   'avatar': profile.avatar.url, })

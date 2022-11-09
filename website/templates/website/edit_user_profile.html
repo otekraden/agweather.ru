@@ -1,0 +1,74 @@
+{% extends "website/base_container.html" %}
+{% load static %}
+
+{% block inner_content %}
+
+  <div class="text-center">
+      <p class="h6 text-gray-400 mb-4">Profile Edit</p>
+      <img class="card-img-top col-sm-5 col-6" src="{{ avatar }}" alt="{{ avatar }}">
+  </div>
+  <form class="user" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="id_avatar" class="form-label">Change avatar:</label>
+      <input type="file" class="{% if profile_form.avatar.errors %}is-invalid{% endif %}" id="id_avatar" name="avatar"
+        accept="image/*">
+    </div>
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="id_username" class="form-label">Username:</label>
+      <input type="text" class="form-control" name="username" maxlength="150"
+      autofocus="" required="" id="id_username"
+      {% if user_form.username.value %} value="{{ user_form.username.value }}" {% endif %}
+      readonly>
+    </div>
+    <div class="form-group row">
+        <div class="col-sm-6 mb-3 mb-sm-0">
+            <label for="id_first_name" class="form-label">First Name:</label>
+            <input type="text" class="form-control" name="first_name" maxlength="100"
+            required="" id="id_first_name"
+            {% if user_form.first_name.value %} value="{{ user_form.first_name.value }}" {% endif %}>
+          </div>
+          <div class="col-sm-6">
+            <label for="id_last_name" class="form-label">Last Name:</label>
+            <input type="text" class="form-control" name="last_name" maxlength="100"
+            required="" id="id_last_name" placeholder="Last Name"
+            {% if user_form.last_name.value %} value="{{ user_form.last_name.value }}" {% endif %}>
+        </div>
+    </div>
+    <div class="form-group">
+      <label for="id_about_me" class="form-label">About me:</label>
+      <textarea class="form-control" name="about_me" maxlength="500" autofocus=""
+      id="id_about_me" rows="3">
+      {{ profile_form.about_me.value }}
+      </textarea>
+    </div>
+    <div class="form-group">
+      {{ profile_form.favorite_location.label_tag }}
+      {{ profile_form.favorite_location }}
+    </div>
+
+
+    {% if user_form.errors %}
+      {% for field in user_form %}
+        {% for error in field.errors %}
+          <p style="color: red"> {{field.label}}:   {{ error|escape }} </p>
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+
+    {% if profile_form.errors %}
+    {% for field in profile_form %}
+      {% for error in field.errors %}
+        <p style="color: red"> {{field.label}}:   {{ error|escape }} </p>
+      {% endfor %}
+    {% endfor %}
+    {% endif %}
+
+    <input class="btn btn-primary btn-block" type="submit" value="Save Changes">
+  </form>
+  <hr>
+  <div class="text-center">
+      <a class="small" style="font-size: 100%" href="{% url 'website:profile'%}">View Profile</a>
+  </div>
+
+{% endblock %}

@@ -133,6 +133,9 @@ def forecast(request):
         'timezone': start_forecast_datetime.tzinfo,
         }
 
+    if request.user.is_authenticated:
+        context['avatar'] = get_profile(request).avatar.url
+
     return render(
         request=request,
         template_name='website/forecast.html',
@@ -296,6 +299,9 @@ def archive(request):
         'timezone': timezone_info,
     }
 
+    if request.user.is_authenticated:
+        context['avatar'] = get_profile(request).avatar.url
+
     return render(
         request=request, template_name='website/archive.html', context=context)
 
@@ -323,9 +329,12 @@ def check_int_input(value, min, max, default):
 
 def default_location(request):
     if request.user.is_authenticated:
-        return str(Profile.objects.get(
-            user=request.user).favorite_location)
+        return str(get_profile(request).favorite_location)
     return LOCATIONS[1]
+
+
+def get_profile(request):
+    return Profile.objects.get(user=request.user)
 
 ##################
 # AUTHENTICATION #
@@ -382,7 +391,8 @@ def profile(request):
     user = get_object_or_404(User, username=request.user.username)
     profile = get_object_or_404(Profile, user=user)
     return render(request, 'website/user_profile.html',
-                  {'profile': profile, 'user': user})
+                  {'profile': profile, 'user': user,
+                   'avatar': profile.avatar.url})
 
 
 @login_required

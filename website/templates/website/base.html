@@ -175,11 +175,11 @@
                 
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{% url 'website:profile' %}">
+                                <a class="dropdown-item" href="{% url 'user_profile:profile' %}">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                <a class="dropdown-item" href="{% url 'website:edit_user_profile' %}">
+                                <a class="dropdown-item" href="{% url 'user_profile:edit_user_profile' %}">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Edit Profile
                                 </a>
@@ -197,7 +197,7 @@
                 
                         {% else %}
                         <li class="nav-item mx-3"><a href="{% url 'login' %}"><span class="text-white h6">Login</span></a></li>
-                        <li class="nav-item mx-3"><a href="{% url 'website:signup' %}"><span class="text-white h6">Sign Up</span></a></li>
+                        <li class="nav-item mx-3"><a href="{% url 'user_profile:signup' %}"><span class="text-white h6">Sign Up</span></a></li>
                         {% endif %}
                 
                     </ul>

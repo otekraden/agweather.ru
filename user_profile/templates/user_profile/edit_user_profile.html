@@ -1,4 +1,4 @@
-{% extends "website/base_container.html" %}
+{% extends "user_profile/base_container.html" %}
 {% load static %}
 
 {% block inner_content %}
@@ -68,7 +68,7 @@
   </form>
   <hr>
   <div class="text-center">
-      <a class="small" style="font-size: 100%" href="{% url 'website:profile'%}">View Profile</a>
+      <a class="small" style="font-size: 100%" href="{% url 'user_profile:profile'%}">View Profile</a>
   </div>
 
 {% endblock %}

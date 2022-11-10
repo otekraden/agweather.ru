@@ -1,4 +1,4 @@
-{% extends "website/base_container.html" %}
+{% extends "user_profile/base_container.html" %}
 
 {% block inner_content %}
 
@@ -26,7 +26,7 @@
     <a class="small" style="font-size: 100%" href="{% url 'password_reset' %}">Forgot Password?</a>
   </div>
   <div class="text-center p-2">
-    <a class="small" style="font-size: 100%" href="{% url 'website:signup' %}">Create an Account!</a>
+    <a class="small" style="font-size: 100%" href="{% url 'user_profile:signup' %}">Create an Account!</a>
   </div>
 
 {% endblock %}

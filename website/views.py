@@ -12,9 +12,6 @@ from user_profile.models import Profile
 WEATHER_PARAMETERS = [
     f'{par.name}, {par.meas_unit}' for par in WeatherParameter.objects.all()]
 LOCATIONS = tuple(map(str, Location.objects.all()))
-FORECAST_SOURCES_URLS = [source.url for source in ForecastSource.objects.all()]
-FORECAST_SOURCES_NAMES = [
-    source.name for source in ForecastSource.objects.all()]
 
 
 def forecast(request):
@@ -119,7 +116,6 @@ def forecast(request):
         'selection_period': selection_period,
         'chartjs_options': chartjs_options,
         'chartjs_data': chartjs_data,
-        'forecast_sources': zip(FORECAST_SOURCES_NAMES, FORECAST_SOURCES_URLS),
         'timezone': start_forecast_datetime.tzinfo,
         }
 
@@ -285,7 +281,6 @@ def archive(request):
         'prediction_range': prediction_range,
         'chartjs_data': chartjs_data,
         'chartjs_options': chartjs_options,
-        'forecast_sources': zip(FORECAST_SOURCES_NAMES, FORECAST_SOURCES_URLS),
         'timezone': timezone_info,
     }
 

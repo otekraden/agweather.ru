@@ -52,6 +52,10 @@ class ForecastSource(models.Model):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def dropdown_list(cls):
+        return ((source.name, source.url) for source in cls.objects.all())
+
 
 class ForecastTemplate(models.Model):
     forecast_source = models.ForeignKey(

@@ -15,7 +15,8 @@ class SignUpForm(UserCreationForm):
 class EditProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ('about_me', 'avatar', 'favorite_location')
+        fields = (
+            'about_me', 'avatar', 'favorite_location', 'hide_personal_data')
         widgets = {
             'favorite_location': forms.Select(attrs={'class': 'form-control'}),
             # 'avatar': forms.Input(attrs={'class': 'form-control'}),

@@ -6,22 +6,29 @@
   <div class="row">
     <div class="card col-lg-6 offset-lg-3 mb-3">
       <div class="row">
-        <img class="card-img-top col-sm-3 col-4 my-3" src="{{ profile.avatar.url }}" alt="{{ user.username }}">
+        <img class="card-img-top col-sm-3 col-4 my-3" src="{{ profile.avatar.url }}" alt="{{ profile.user.username }}">
         <div class="card-body col-9">
-          <h2 class="card-title my-3">{{ user.username }}</h2>
-          <p>First name: {{ user.first_name }} </p>
-          <p>Last name: {{ user.last_name }} </p>
+          <h2 class="card-title my-3">{{ profile.user.username }}</h2>
+          {% if not profile.hide_personal_data %}
+          <p>First name: {{ profile.user.first_name }} </p>
+          <p>Last name: {{ profile.user.last_name }} </p>
+          {% endif %}
         </div>
       </div>
-    <p>Email: {{ user.email }} </p>
-    <p>Last login on: {{ user.last_login }}</p>
-    <p class="card-text">About me: {{ user.profile.about_me }}</p>
-    <p class="card-text">Favorite location: {{ user.profile.favorite_location }}</p>
+    <p>{{ profile.hide_personal_data }}</p>
+    {% if not profile.hide_personal_data %}
+    <p>Email: {{ profile.user.email }} </p>
+    {% endif %}
+    <p>Last login on: {{ profile.user.last_login }}</p>
+    <p class="card-text">About me: {{ profile.about_me }}</p>
+    <p class="card-text">Favorite location: {{ profile.favorite_location }}</p>
     </div>
   </div>
   <hr>
+  {% if profile.user.username == user.username %}
   <div class="text-center">
-      <a class="small" style="font-size: 100%" href="{% url 'user_profile:edit_user_profile'%}">Edit Profile</a>
+      <a class="small" style="font-size: 100%" href="{% url 'user_profile:edit_user_profile' username=profile.user.username %}">Edit Profile</a>
   </div>
+  {% endif %}
 </div>
 {% endblock %}

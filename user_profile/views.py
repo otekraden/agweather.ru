@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.models import Group
 from .forms import SignUpForm, EditProfileForm, EditUserForm
 from django.contrib.sites.shortcuts import get_current_site
@@ -6,11 +6,11 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .tokens import account_activation_token
 from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from .models import User, Profile
 from website.views import LOCATIONS
+from forum.models import Post
 
 ##################
 # AUTHENTICATION #
@@ -48,7 +48,7 @@ def signup(request):
 
 
 def activate(request, uidb64, token):
-    User = get_user_model()
+    # User = get_user_model()
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -63,18 +63,28 @@ def activate(request, uidb64, token):
 
 
 @login_required
-def profile(request):
-    user = get_object_or_404(User, username=request.user.username)
-    profile = get_object_or_404(Profile, user=user)
-    return render(request, 'user_profile/user_profile.html',
-                  {'profile': profile, 'user': user,
-                   'avatar': profile.avatar.url})
+def profile(request, username):
+
+    user = User.objects.get(username=username)
+    profile = Profile.objects.get(user=user)
+
+    context = {
+        'posts': Post.objects.filter(
+            author=User.objects.get(username=username)),
+        'profile': profile,
+    }
+
+    return render(request, 'user_profile/user_profile.html', context)
 
 
 @login_required
-def edit_user_profile(request):
-    user = get_object_or_404(User, username=request.user.username)
-    profile = get_object_or_404(Profile, user=user)
+def edit_user_profile(request, username):
+
+    if username != request.user.username:
+        return redirect('login')
+
+    user = User.objects.get(username=username)
+    profile = Profile.objects.get(user=user)
 
     if request.method == 'POST':
         user_form = EditUserForm(request.POST, instance=user)
@@ -83,13 +93,15 @@ def edit_user_profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            return redirect('user_profile:profile')
+            return redirect('user_profile:profile', username)
 
     elif request.method == 'GET':
         user_form = EditUserForm(instance=user)
         profile_form = EditProfileForm(instance=profile)
 
-    return render(request, 'user_profile/edit_user_profile.html',
-                  {'user_form': user_form, 'profile_form': profile_form,
-                   'locations': LOCATIONS,
-                   'avatar': profile.avatar.url, })
+    context = {'user_form': user_form,
+               'profile_form': profile_form,
+               'locations': LOCATIONS,
+               'avatar': profile.avatar.url, }
+
+    return render(request, 'user_profile/edit_user_profile.html', context)

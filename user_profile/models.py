@@ -15,10 +15,11 @@ class Profile(models.Model):
         default='avatar.jpg',  # default avatar
         upload_to='profile_avatars'  # dir to store the image
     )
+    hide_personal_data = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.username
-    
+
     def save(self, *args, **kwargs):
         # save the profile first
         super().save(*args, **kwargs)

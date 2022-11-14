@@ -34,8 +34,10 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
+    'forum.apps.ForumConfig',
     'user_profile.apps.UserProfileConfig',
     'website.apps.WebsiteConfig',
+    # 'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -161,3 +163,7 @@ EMAIL_ADMIN = EMAIL_HOST_USER
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
+
+# Crispy forms
+
+# CRISPY_TEMPLATE_PACK = 'bootstrap4'

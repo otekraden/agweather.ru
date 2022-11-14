@@ -1,13 +1,17 @@
 from datascraper.models import ForecastSource
 from django.contrib.auth import get_user_model
-from user_profile.models import Profile
+from user_profile.models import Profile, User
 
 
 def add_variable_to_context(request):
 
-    # profile = Profile.objects.get(user=get_user_model().id)
+    context_add = {
+            'forecast_sources': ForecastSource.dropdown_list(),}
 
-    return {
-        'forecast_sources': ForecastSource.dropdown_list(),
-        # 'user_profile_avatar': profile.avatar.url,
-    }
+    username = request.user.username
+    if username:
+        user = User.objects.get(username=username)
+        profile = Profile.objects.get(user=user)
+        context_add['user_profile_avatar'] = profile.avatar.url
+
+    return context_add

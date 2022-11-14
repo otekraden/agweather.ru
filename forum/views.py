@@ -1,6 +1,5 @@
-from django.shortcuts import render, reverse
+from django.shortcuts import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic.edit import FormMixin
 from django.views.generic import (
     ListView,
     DetailView,
@@ -9,15 +8,14 @@ from django.views.generic import (
     DeleteView
 )
 
-from .models import Topic, Post, Comment
-from .forms import CreateCommentForm
+from .models import Topic, Post
 
 # Topic views
 
 
 class TopicListView(ListView):
     model = Topic
-    template_name = 'forum/index.html'  # <app>/<model>_<viewtype>.html
+    template_name = 'forum/index.html'
     context_object_name = 'topics'
 
 
@@ -40,35 +38,6 @@ class TopicCreateView(LoginRequiredMixin, CreateView):
 # Post views
 
 
-class PostDetailView(LoginRequiredMixin, FormMixin, DetailView):
-    model = Post
-    form_class = CreateCommentForm
-
-    def get_context_data(self, **kwargs):
-        context = super(PostDetailView, self).get_context_data(**kwargs)
-        context['comments'] = Comment.objects.filter(
-            post=self.kwargs.get('pk'))
-        context['form'] = CreateCommentForm(
-            initial={'post': self.object, 'author': self.request.user})
-
-        return context
-
-    def get_success_url(self):
-        return reverse('forum:post-detail', kwargs={'pk': self.object.id})
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        form = self.get_form()
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
-    def form_valid(self, form):
-        form.save()
-        return super(PostDetailView, self).form_valid(form)
-
-
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ['body']
@@ -79,12 +48,14 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('forum:topic-detail', kwargs={'pk': self.object.topic.id})
+        return reverse(
+            'forum:topic-detail', kwargs={'pk': self.object.topic.id})
 
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
-    fields = ['title', 'body']
+    fields = ['body']
+    template_name = 'forum/post_update.html'
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -96,13 +67,20 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return True
         return False
 
+    def get_success_url(self):
+        return reverse(
+            'forum:topic-detail', kwargs={'pk': self.object.topic.id})
+
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
-    success_url = '/'
 
     def test_func(self):
         post = self.get_object()
         if self.request.user == post.author:
             return True
         return False
+
+    def get_success_url(self):
+        return reverse(
+            'forum:topic-detail', kwargs={'pk': self.object.topic.id})

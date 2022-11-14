@@ -16,13 +16,17 @@
                         <p class="ml-2"> {{ post.author }} </p>
                     </div>
                 </a>
-                <div class="text-right">
-                    <a href="{% url 'forum:post-detail' pk=post.pk %}" class="ml-5 text-gray-500"> 
+                <div class="row offset-2 mb-2">
+                    <p class="text-gray-500"> 
                         {{ post.timestamp|date:"d M Y H:i" }} 
-                    </a>
+                    </p>
+                    {% if post.author == user %}
+                    <a class="btn btn-warning btn-sm mt-1 mb-1 ml-2" href="{% url 'forum:post-update' post.id %}">edit</a>
+                    <a class="btn btn-danger btn-sm mt-1 mb-1 ml-2" href="{% url 'forum:post-delete' post.id %}">delete</a>
+                    {% endif %}
                 </div>
             </div>
-            <div class="col-6 offset-2 mb-4">
+            <div class="col-6 offset-2 mb-5">
                 <p> {{ post.body }} </p>
             </div>
         {% endfor %}

@@ -1,0 +1,27 @@
+{% extends "website/base.html" %}
+{% block content %}
+
+    <div class="container-fluid mt-3">
+
+        <div class="row offset-2 mb-3">
+            <h5 class="text-gray-400" id="header">Edit post here:</h5>
+        </div>
+
+        <div class="row offset-2">
+            <form method="POST">
+                {% csrf_token %}
+                <fieldset class="form-group">
+                    {{ form.body }}
+                </fieldset>
+                <div class="form-group">
+                    <button class="btn btn-outline-info" type="submit">Save post</button>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+
+
+
+
+{% endblock content %} 

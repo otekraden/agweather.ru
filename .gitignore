@@ -120,5 +120,13 @@ proxies_extension.zip
 *dump_db.json
 *dump_db.json.zip
 
-static/
+# website/static/website/*
+website/static/website/css/*
+website/static/website/img/*
+website/static/website/scss/*
+website/static/website/vendor/*
+website/static/website/js/*
+!myscripts.js
+
+static/*
 media/

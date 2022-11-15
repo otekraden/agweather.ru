@@ -1,12 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from datascraper.models import (
-    WeatherParameter, Location, ForecastTemplate, Forecast, ForecastSource,
+    WeatherParameter, Location, ForecastTemplate, Forecast,
     ArchiveTemplate, Archive)
 from backports import zoneinfo
 from django.utils import timezone
 from datetime import timedelta, datetime
 from user_profile.models import Profile
+from forum.models import Topic
 
 
 WEATHER_PARAMETERS = [
@@ -320,3 +321,8 @@ def default_location(request):
 
 def get_profile(request):
     return Profile.objects.get(user=request.user)
+
+
+def feedback(request):
+    feedback_topic_pk = Topic.objects.get(title='User Feedback').pk
+    return redirect("forum:topic-detail", pk=feedback_topic_pk)

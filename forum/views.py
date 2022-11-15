@@ -23,7 +23,7 @@ class TopicDetailView(DetailView):
     model = Topic
 
     def get_context_data(self, **kwargs):
-        context = super(TopicDetailView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['posts'] = Post.objects.filter(topic=self.kwargs.get('pk'))
         return context
 

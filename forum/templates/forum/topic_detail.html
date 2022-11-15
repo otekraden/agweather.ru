@@ -3,9 +3,11 @@
 
     <div class="container-fluid mt-3">
 
-        <div class="row offset-2 mb-5">
+        <div class="col offset-2 mb-5">
             <h3 class="text-gray-400" id="header">{{ object.title }}</h3>
+            <p>{{ object.description }}</p>
         </div>
+        
 
         {% for post in posts %}
             <div class="row offset-2">
@@ -21,8 +23,8 @@
                         {{ post.timestamp|date:"d M Y H:i" }} 
                     </p>
                     {% if post.author == user %}
-                    <a class="btn btn-warning btn-sm mt-1 mb-1 ml-2" href="{% url 'forum:post-update' post.id %}">edit</a>
-                    <a class="btn btn-danger btn-sm mt-1 mb-1 ml-2" href="{% url 'forum:post-delete' post.id %}">delete</a>
+                    <a class="btn btn-warning btn-sm mt-1 mb-1 ml-2" href="{% url 'forum:post-update' post.id %}">Edit</a>
+                    <a class="btn btn-danger btn-sm mt-1 mb-1 ml-2" href="{% url 'forum:post-delete' post.id %}">Delete</a>
                     {% endif %}
                 </div>
             </div>

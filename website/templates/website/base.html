@@ -67,8 +67,9 @@
             
             <!-- Heading -->
             <div class="sidebar-heading">
-                Select view mode:
+                Site view mode:
             </div>
+
             {% with url_name=request.resolver_match.url_name %}
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'website:forecast' %}" 
@@ -90,6 +91,58 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Contribution:
+            </div>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-sticky-note"></i>
+                    <span>Add location</span></a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-sticky-note"></i>
+                    <span>Connect source</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-sticky-note"></i>
+                    <span>Create new source</span></a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+            
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                About:
+            </div>
+            
+            <!-- Nav Item - About -->
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-sticky-note"></i>
+                    <span>Website idea</span></a>
+            </li>
+                
+            <!-- Nav Item - Source Code -->
+            <li class="nav-item">
+                <a class="nav-link" href="https://github.com/venom812/agweather.online">
+                    <i class="fab fa-github"></i>
+                    <span>Source Code</span></a> 
+            </li>
+                    
+            <!-- Nav Item - Feedback -->
+            <li class="nav-item">
+                <a class="nav-link" href={% url 'website:feedback' %}>
+                    <i class="far fa-comment-alt"></i>
+                    <span>User Feedback</span></a>
+            </li>
+
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
@@ -106,31 +159,6 @@
                         {% endfor %}
                     </div>
                 </div>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            
-            <!-- Nav Item - Feedback -->
-            <li class="nav-item">
-                <a class="nav-link" href={% url 'website:feedback' %}>
-                    <i class="far fa-comment-alt"></i>
-                    <span>User Feedback</span></a>
-            </li>
-
-            <!-- Nav Item - About -->
-            <li class="nav-item">
-                <a class="nav-link" href="/about">
-                    <i class="fas fa-sticky-note"></i>
-                    <span>About this site</span></a>
-            </li>
-
-            <!-- Nav Item - Source Code -->
-            <li class="nav-item">
-                <a class="nav-link" href="https://github.com/venom812/agweather.online">
-                    <i class="fab fa-github"></i>
-                    <span>Source Code</span></a>
-                    
             </li>
 
             <!-- Divider -->

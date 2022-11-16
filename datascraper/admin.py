@@ -10,6 +10,7 @@ from .models import (
     ArchiveTemplate,
     Forecast,
     Archive,
+    # TimezoneChoice
     )
 
 from backports import zoneinfo
@@ -68,7 +69,7 @@ class LocationAdmin(admin.ModelAdmin):
         ArchiveTemplateInline,
         ]
 
-    list_display = ['name', 'region', 'country', 'timezone']
+    list_display = ['name', 'region', 'country', 'timezone', 'is_active']
 
     list_filter = ["country"]
 

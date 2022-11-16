@@ -5,17 +5,29 @@ from datascraper import forecasts, archive
 from backports import zoneinfo
 import collections
 from datascraper.logging import init_logger
+from datascraper.forecasts import get_soup
 
 ########
 # MISC #
 ########
 
 
+def get_timezone_choices():
+    choices = get_soup(
+        'https://en.wikipedia.org/wiki/List_of_tz_database_time_zones')
+    choices = choices.tbody.find_all('tr')[2:]
+    choices = [item.td.find_next_sibling().get_text().strip()
+               for item in choices]
+    return [(item, item) for item in choices]
+
+
 class Location(models.Model):
     name = models.CharField(max_length=30)
     region = models.CharField(max_length=30)
     country = models.CharField(max_length=30)
-    timezone = models.CharField(max_length=40, default='UTC')
+    timezone = models.CharField(
+        max_length=40, default='Europe/Moscow', choices=get_timezone_choices())
+    is_active = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('name', 'region', 'country')

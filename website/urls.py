@@ -10,4 +10,6 @@ urlpatterns = [
     path('forecast/', views.forecast, name="forecast"),
     path('archive/', views.archive, name="archive"),
     path('feedback/', views.feedback, name="feedback"),
+    path('add_location/', views.LocationCreateView.as_view(),
+         name="add_location"),
 ]

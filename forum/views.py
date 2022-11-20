@@ -7,13 +7,14 @@ from django.views.generic import (
     UpdateView,
     DeleteView
 )
-
 from .models import Topic, Post
 
-# Topic views
+###############
+# TOPIC VIEWS #
+###############
 
 
-class TopicListView(ListView):
+class TopicListView(LoginRequiredMixin, ListView):
     model = Topic
     template_name = 'forum/index.html'
     context_object_name = 'topics'
@@ -35,7 +36,9 @@ class TopicCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         return super().form_valid(form)
 
-# Post views
+##############
+# POST VIEWS #
+##############
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):

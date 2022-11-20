@@ -6,6 +6,7 @@ from backports import zoneinfo
 import collections
 from datascraper.logging import init_logger
 from datascraper.forecasts import get_soup
+from django.contrib.auth.models import User
 
 ########
 # MISC #
@@ -28,6 +29,7 @@ class Location(models.Model):
     timezone = models.CharField(
         max_length=40, default='Europe/Moscow', choices=get_timezone_choices())
     is_active = models.BooleanField(default=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         unique_together = ('name', 'region', 'country')

@@ -326,18 +326,12 @@ def get_profile(request):
 
 class LocationCreateView(LoginRequiredMixin, CreateView):
     model = Location
-    fields = '__all__'
+    fields = ['name', 'region', 'country', 'timezone']
     template_name = 'website/location_form.html'
 
-    # request.session['location']
-
-    # def form_valid(self, form):
-    #     return super().form_valid(form)
-
-    # def form_valid(self, form):
-    #     form.instance.author = self.request.user
-    #     form.instance.topic = Topic.objects.get(pk=self.kwargs['pk'])
-    #     return super().form_valid(form)
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse('website:forecast')

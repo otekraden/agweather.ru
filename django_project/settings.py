@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'forum.apps.ForumConfig',
     'user_profile.apps.UserProfileConfig',
     'website.apps.WebsiteConfig',
-    # 'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'datascraper.apps.DatascraperConfig',
     'django_admin_inline_paginator',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [

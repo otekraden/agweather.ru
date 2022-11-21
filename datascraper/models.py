@@ -7,6 +7,23 @@ import collections
 from datascraper.logging import init_logger
 from datascraper.forecasts import get_soup
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
+
+##############
+# VALIDATORS #
+##############
+
+
+alpha = RegexValidator(r'^[a-zA-Z]*$', 'Only roman characters are allowed.')
+
+
+def validate_first_upper(value):
+    if value[0].islower():
+        raise ValidationError(
+            "First letter must be uppercase.",
+            params={"value": value},
+        )
 
 ########
 # MISC #
@@ -23,9 +40,9 @@ def get_timezone_choices():
 
 
 class Location(models.Model):
-    name = models.CharField(max_length=30)
-    region = models.CharField(max_length=30)
-    country = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
+    region = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
+    country = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
     timezone = models.CharField(
         max_length=40, default='Europe/Moscow', choices=get_timezone_choices())
     is_active = models.BooleanField(default=False)

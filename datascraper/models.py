@@ -92,8 +92,9 @@ class ForecastTemplate(models.Model):
     forecast_source = models.ForeignKey(
         ForecastSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
-    location_relative_url = models.CharField(max_length=100)
+    url = models.CharField(max_length=100)
     last_scraped = models.DateTimeField()
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         ordering = ['location', 'forecast_source']
@@ -139,15 +140,15 @@ class ForecastTemplate(models.Model):
             start_forecast_datetime = template.start_forecast_datetime()
             logger.debug(f'SFDT: {start_forecast_datetime}')
 
-            # Full pass to forecast source
-            forecast_url = template.forecast_source.url + \
-                template.location_relative_url
+            # # Full pass to forecast source
+            # forecast_url = template.forecast_source.url + \
+            #     template.location_relative_url
 
             # Getting json_data from calling source scraper function
             scraper_func = getattr(forecasts, template.forecast_source.id)
             try:
                 scraped_forecasts = scraper_func(
-                    start_forecast_datetime, forecast_url)
+                    start_forecast_datetime, template.url)
                 template.last_scraped = local_datetime
                 template.save()
 
@@ -250,7 +251,8 @@ class ArchiveTemplate(models.Model):
     archive_source = models.ForeignKey(
         ArchiveSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
-    location_relative_url = models.CharField(max_length=100)
+    url = models.CharField(max_length=100)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         ordering = ['location', 'archive_source']
@@ -277,9 +279,9 @@ class ArchiveTemplate(models.Model):
             start_archive_datetime = local_datetime.replace(
                 minute=0, second=0, microsecond=0)
 
-            # Full pass to archive source
-            archive_url = template.archive_source.url + \
-                template.location_relative_url
+            # # Full pass to archive source
+            # archive_url = template.archive_source.url + \
+            #     template.location_relative_url
 
             try:
                 last_record_datetime = Archive.objects.filter(
@@ -291,7 +293,7 @@ class ArchiveTemplate(models.Model):
 
             try:
                 archive_data = archive.arch_rp5(
-                    start_archive_datetime, archive_url, last_record_datetime)
+                    start_archive_datetime, template.url, last_record_datetime)
             except Exception as _ex:
 
                 logger.error(f"{template}: {_ex}")

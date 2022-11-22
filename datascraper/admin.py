@@ -32,7 +32,7 @@ class ForecastTemplateInline(admin.TabularInline):
     model = ForecastTemplate
     extra = 0
 
-    fields = ("forecast_source", 'source_url', "location_relative_url")
+    fields = ("forecast_source", 'source_url', 'url')
     readonly_fields = ('source_url',)
 
     def source_url(self, obj):
@@ -49,7 +49,7 @@ class ArchiveTemplateInline(admin.TabularInline):
     model = ArchiveTemplate
     extra = 0
 
-    fields = ("archive_source", 'source_url', "location_relative_url")
+    fields = ("archive_source", 'source_url', 'url')
     readonly_fields = ('source_url',)
 
     def source_url(self, obj):
@@ -75,8 +75,8 @@ class LocationAdmin(admin.ModelAdmin):
 
     search_fields = ["name"]
 
-    def has_delete_permission(self, request, obj=None):
-        return False
+    # def has_delete_permission(self, request, obj=None):
+    #     return False
 
 
 ####################
@@ -184,7 +184,7 @@ class ForecastTemplateAdmin(admin.ModelAdmin):
 
     def view_on_source_site(self, obj):
 
-        url = obj.forecast_source.url + obj.location_relative_url
+        url = obj.url
         color = obj.forecast_source.chart_color
 
         return format_html('<a href="{}" target="_blank" \
@@ -254,7 +254,7 @@ class ArchiveTemplateAdmin(admin.ModelAdmin):
 
     def view_on_source_site(self, obj):
 
-        url = obj.archive_source.url + obj.location_relative_url
+        url = obj.url
         color = obj.archive_source.chart_color
 
         return format_html('<a href="{}" target="_blank" \

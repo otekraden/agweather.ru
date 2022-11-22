@@ -335,3 +335,16 @@ class LocationCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse('website:forecast')
+
+
+class ForecastTemplateCreateView(LoginRequiredMixin, CreateView):
+    model = ForecastTemplate
+    fields = '__all__'
+    template_name = 'website/forecasttemplate_form.html'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('website:forecast')

@@ -12,4 +12,6 @@ urlpatterns = [
     path('feedback/', views.feedback, name="feedback"),
     path('add_location/', views.LocationCreateView.as_view(),
          name="add_location"),
+    path('add_forecast_template/', views.ForecastTemplateCreateView.as_view(),
+         name="add_forecast_template"),
 ]

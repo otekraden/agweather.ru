@@ -10,6 +10,9 @@ from user_profile.models import Profile
 from forum.models import Topic
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView
+from formtools.wizard.views import SessionWizardView
+from website import forms
+from django.http import HttpResponse
 
 
 WEATHER_PARAMETERS = [
@@ -323,7 +326,6 @@ def default_location(request):
 def get_profile(request):
     return Profile.objects.get(user=request.user)
 
-
 class LocationCreateView(LoginRequiredMixin, CreateView):
     model = Location
     fields = ['name', 'region', 'country', 'timezone']
@@ -334,17 +336,41 @@ class LocationCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('website:forecast')
+        return reverse('website:add_forecast_template')
 
 
-class ForecastTemplateCreateView(LoginRequiredMixin, CreateView):
-    model = ForecastTemplate
-    fields = '__all__'
-    template_name = 'website/forecasttemplate_form.html'
+FORMS = [("step1", forms.ConnectSourceForm1),
+         ("step2", forms.ConnectSourceForm2),]
 
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+TEMPLATES = {"step1": "website/connect_source/step1.html",
+             "step2": "website/connect_source/step2.html"}
 
-    def get_success_url(self):
-        return reverse('website:forecast')
+
+class WeatherWizard(LoginRequiredMixin, SessionWizardView):
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        # get the value from step 1
+        try:
+            step1_data = self.get_cleaned_data_for_step('step1')
+            forecast_source_from_step1 = step1_data['forecast_source']
+            sample_source_url_from_step1 = ForecastTemplate.objects.filter(
+                forecast_source=forecast_source_from_step1)[0].url
+            context['sample_source_url_from_step1'] = sample_source_url_from_step1
+
+        finally:
+            return context
+
+    def get_template_names(self):
+        return [TEMPLATES[self.steps.current]]
+
+    def done(self, form_list, **kwargs):
+
+        form_data = {}
+        for form in form_list:
+            for key, value in form.cleaned_data.items():
+                form_data[key] = value
+
+        Location.objects.create(**form_data)
+
+        return HttpResponse(form_data)

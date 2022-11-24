@@ -98,6 +98,7 @@ class ForecastTemplate(models.Model):
 
     class Meta:
         ordering = ['location', 'forecast_source']
+        unique_together = ('forecast_source', 'location')
 
     # Getting local datetime at forecast location
     def local_datetime(self):
@@ -256,6 +257,7 @@ class ArchiveTemplate(models.Model):
 
     class Meta:
         ordering = ['location', 'archive_source']
+        unique_together = ('archive_source', 'location')
 
     def __str__(self):
         return f"{self.archive_source} --> {self.location}"

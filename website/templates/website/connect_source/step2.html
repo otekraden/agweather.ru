@@ -1,0 +1,12 @@
+{% extends "website/connect_source/wizard_form.html" %}
+
+    {% block form_instructions %}
+        <div class="text-center">
+            <p class="h6 text-gray-400 mb-4">On this step you need to input link to source webpage from where data will be scrapnig.</p>
+            <p class="h6 text-gray-400 mb-4">Follow by sample link below and find on source site location by analogy.</p>
+            <p class="h6 text-gray-400 mb-4">Then copy from brouser address line and pase url below in form.</p>
+        </div>
+        <p class="h6 text-gray-400 ">Sample source url:
+            <a href="{{ sample_source_url_from_step1 }}" target="_blank" rel="noopener noreferrer">{{ sample_source_url_from_step1 }}</a>
+        </p>
+    {% endblock %}

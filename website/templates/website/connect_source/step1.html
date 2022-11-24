@@ -1,0 +1,12 @@
+{% extends "website/connect_source/wizard_form.html" %}
+
+    {% block form_instructions %}
+        <div class="text-center">
+            <p class="h5 text-gray-400 mb-4">Welcome to weather template creation wizard!</p>
+            <p class="h6 text-gray-400 mb-4">To create new template pass all form steps</p>
+        </div>
+        <p class="h6 text-gray-400 ">Select Location or
+            <a href="{% url 'website:add_location' %}">Create new</a>
+        </p>
+            
+    {% endblock %}

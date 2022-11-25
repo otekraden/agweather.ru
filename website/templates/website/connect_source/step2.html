@@ -1,12 +1,22 @@
 {% extends "website/connect_source/wizard_form.html" %}
 
-    {% block form_instructions %}
-        <div class="text-center">
-            <p class="h6 text-gray-400 mb-4">On this step you need to input link to source webpage from where data will be scrapnig.</p>
-            <p class="h6 text-gray-400 mb-4">Follow by sample link below and find on source site location by analogy.</p>
-            <p class="h6 text-gray-400 mb-4">Then copy from brouser address line and pase url below in form.</p>
-        </div>
-        <p class="h6 text-gray-400 ">Sample source url:
-            <a href="{{ sample_source_url_from_step1 }}" target="_blank" rel="noopener noreferrer">{{ sample_source_url_from_step1 }}</a>
-        </p>
-    {% endblock %}
+{% block above_form %}
+    
+    <div "h6 text-gray-400 mb-4">
+        <p class="h6 text-gray-400 mb-2">On this step you need to input link to source webpage from where data will be scraping.</p>
+        <p class="h6 text-gray-400 mb-2">Follow Sample link on source site below and find  desired location by analogy.</p>
+        <a href="{{ sample_source_url_from_step1 }}" target="_blank" rel="noopener noreferrer">{{ sample_source_url_from_step1 }}</a>
+        <p class="h6 text-gray-400 my-2">Finally copy from url browser address line and paste it below in form.</p>
+    </div>
+        
+{% endblock %}
+
+{% block below_form %}
+
+    <button type="submit" form="step_form" class="btn btn-outline-info">Next</button>
+    {% if wizard.steps.prev %}
+    {% comment %} <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">First step</button> {% endcomment %}
+    {% comment %} <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" form="step_form" formnovalidate="formnovalidate" value="{{ wizard.steps.prev }}">Back</button> {% endcomment %}
+    {% endif %}
+
+{% endblock %}

@@ -1,12 +1,23 @@
 {% extends "website/connect_source/wizard_form.html" %}
 
-    {% block form_instructions %}
-        <div class="text-center">
-            <p class="h5 text-gray-400 mb-4">Welcome to weather template creation wizard!</p>
-            <p class="h6 text-gray-400 mb-4">To create new template pass all form steps</p>
-        </div>
-        <p class="h6 text-gray-400 ">Select Location or
-            <a href="{% url 'website:add_location' %}">Create new</a>
-        </p>
-            
-    {% endblock %}
+{% block above_form %}
+
+    <div class="text-center">
+        <p class="h5 text-gray-400 mb-4">Welcome to weather template creation wizard!</p>
+        <p class="h6 text-gray-400 mb-4">To create new template pass all form steps</p>
+    </div>
+    <p class="h6 text-gray-400 ">Select Location or
+        <a href="{% url 'website:add_location' %}">Create new</a>
+    </p>
+        
+{% endblock %}
+
+{% block below_form %}
+
+    <button type="submit" form="step_form" class="btn btn-outline-info">Next</button>   
+    {% if wizard.steps.prev %}
+    {% comment %} <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">First step</button> {% endcomment %}
+    {% comment %} <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Prev step</button> {% endcomment %}
+    {% endif %}
+
+{% endblock %}

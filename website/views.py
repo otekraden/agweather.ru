@@ -17,7 +17,13 @@ from django.http import HttpResponse
 
 WEATHER_PARAMETERS = [
     f'{par.name}, {par.meas_unit}' for par in WeatherParameter.objects.all()]
-LOCATIONS = tuple(map(str, Location.objects.filter(is_active=True)))
+
+
+def location_list():
+    return tuple(map(str, Location.objects.filter(is_active=True)))
+
+
+LOCATIONS = location_list()
 
 
 def forecast(request):
@@ -365,12 +371,16 @@ class WeatherWizard(LoginRequiredMixin, SessionWizardView):
         return [TEMPLATES[self.steps.current]]
 
     def done(self, form_list, **kwargs):
-
+        global LOCATIONS
         form_data = {}
         for form in form_list:
             for key, value in form.cleaned_data.items():
                 form_data[key] = value
 
-        Location.objects.create(**form_data)
+        template = ForecastTemplate.objects.create(**form_data)
+        location = template.location
+        location.is_active = True
+        location.save()
+        LOCATIONS = location_list()
 
-        return HttpResponse(form_data)
+        return HttpResponse(form_data.items())

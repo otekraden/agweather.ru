@@ -7,8 +7,9 @@ import collections
 from datascraper.logging import init_logger
 from datascraper.forecasts import get_soup
 from django.contrib.auth.models import User
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, URLValidator
 from django.core.exceptions import ValidationError
+import re
 
 ##############
 # VALIDATORS #
@@ -16,6 +17,7 @@ from django.core.exceptions import ValidationError
 
 
 alpha = RegexValidator(r'^[a-zA-Z]*$', 'Only roman characters are allowed.')
+source_url_validator = URLValidator(message='It is not Url.')
 
 
 def validate_first_upper(value):
@@ -92,13 +94,28 @@ class ForecastTemplate(models.Model):
     forecast_source = models.ForeignKey(
         ForecastSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
-    url = models.CharField(max_length=100)
-    last_scraped = models.DateTimeField()
+    url = models.CharField(
+        max_length=200,
+        validators=[source_url_validator,],
+        unique=True)
+    last_scraped = models.DateTimeField(default=datetime.fromtimestamp(0))
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         ordering = ['location', 'forecast_source']
         unique_together = ('forecast_source', 'location')
+
+
+    # def clean(self):
+    #     try:
+    #         source_root_url = self.forecast_source.url
+    #         print(source_root_url)
+    #     finally:
+    #         if not re.search(f'^{source_root_url}*$', self.url) and self.url:
+    #             raise ValidationError('This url from another site.')
+    #         # RegexValidator(r'^ZZZ*$', 'Only Z.')
+    #         # if self.url == 'draft' and self.pub_date is not None:
+
 
     # Getting local datetime at forecast location
     def local_datetime(self):
@@ -241,7 +258,7 @@ class Forecast(models.Model):
 class ArchiveSource(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=30)
-    url = models.CharField(max_length=200)
+    url = models.CharField(max_length=200, unique=True)
     chart_color = models.CharField(max_length=10)
 
     def __str__(self):
@@ -252,7 +269,10 @@ class ArchiveTemplate(models.Model):
     archive_source = models.ForeignKey(
         ArchiveSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
-    url = models.CharField(max_length=100)
+    url = models.CharField(
+        max_length=200,
+        validators=[source_url_validator,],
+        unique=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:

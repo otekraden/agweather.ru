@@ -95,6 +95,16 @@
             <div class="sidebar-heading">
                 Contribution:
             </div>
+
+            {% if user.is_superuser %}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>ADMIN TERMINAL</span></a>
+                </li>
+
+            {% endif %}
             
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'website:add_location' %}">

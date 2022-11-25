@@ -2,18 +2,22 @@
 
 {% block inner_content %}
 
-    {% block form_instructions %}
+    {% block above_form %}
     {% endblock %}
 
-    <form action="" method="post">
+    <form id='step_form' action="" method="post">
         {% csrf_token %}
         {{ wizard.management_form }}
         {% include 'website/bs4_form.html' with form=wizard.form %}
-        {% if wizard.steps.prev %}
+        {% comment %} {% if wizard.steps.prev %}
         <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">First step</button>
         <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Prev step</button>
         {% endif %}
-        <button type="submit" class="btn btn-outline-info">Submit</button>
+        <button type="submit" class="btn btn-outline-info">Submit</button> {% endcomment %}
     </form>
+
+    {% block below_form %}
+    {% endblock %}
+
     <p class="mt-3 text-gray-400">Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
 {% endblock %}

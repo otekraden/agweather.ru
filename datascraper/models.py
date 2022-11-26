@@ -238,6 +238,12 @@ class Forecast(models.Model):
     forecast_datetime = models.DateTimeField()
     prediction_range_hours = models.IntegerField()
     forecast_data = models.JSONField()
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=["scraped_datetime", "forecast_template"]),
+            models.Index(fields=["forecast_template", "prediction_range_hours", "forecast_datetime"]),
+        ]
 
     def is_actual(self):
         exp_datetime = timezone.make_naive(
@@ -341,7 +347,10 @@ class Archive(models.Model):
 
     class Meta:
         ordering = ['archive_template', 'record_datetime']
-        index_together = ['archive_template', 'record_datetime']
+        # index_together = ['archive_template', 'record_datetime']
+        indexes = [
+            models.Index(fields=["archive_template", "record_datetime"]),
+        ]
 
     def __str__(self):
         return ""

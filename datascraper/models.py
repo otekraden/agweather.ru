@@ -47,7 +47,7 @@ class Location(models.Model):
     country = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
     timezone = models.CharField(
         max_length=40, default='Europe/Moscow', choices=get_timezone_choices())
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:

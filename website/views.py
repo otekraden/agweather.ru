@@ -339,6 +339,7 @@ class LocationCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
+        form.instance.is_active = False
         return super().form_valid(form)
 
     def get_success_url(self):

@@ -29,8 +29,6 @@ class Command(BaseCommand):
             "auth.permission",
             "--exclude",
             "contenttypes",
-            "--exclude",
-            "auth.user",
             verbosity=0)
         os.remove(last_dump_file_name)
 

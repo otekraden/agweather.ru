@@ -84,11 +84,6 @@ WSGI_APPLICATION = 'django_project.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # },
-    # 'new': {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'agweather_db',
@@ -96,6 +91,10 @@ DATABASES = {
         'PASSWORD': 'Nahsi7ahboid#004',
         'HOST': 'localhost',
         'PORT': '',
+    },
+    'new': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'agweather_sheme.sqlite3',
     },
 }
 

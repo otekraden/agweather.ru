@@ -9,7 +9,6 @@ from datascraper.forecasts import get_soup
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator, URLValidator
 from django.core.exceptions import ValidationError
-import re
 
 ##############
 # VALIDATORS #
@@ -54,17 +53,22 @@ class TimeZone(models.Model):
         for tz in tzones:
             cls.objects.create(name=tz)
 
+        logger.debug('Timezones successfully scraped from Wikipedia.')
+
     @classmethod
     def zones_list(cls):
         return [(tz.name, tz.name) for tz in cls.objects.all()]
 
 
 class Location(models.Model):
-    name = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
-    region = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
-    country = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
-    timezone = models.CharField(max_length=40, default='Europe/Moscow',
-                                choices=TimeZone.zones_list())
+    name = models.CharField(
+        max_length=30, validators=[alpha, validate_first_upper])
+    region = models.CharField(
+        max_length=30, validators=[alpha, validate_first_upper])
+    country = models.CharField(
+        max_length=30, validators=[alpha, validate_first_upper])
+    timezone = models.CharField(
+        max_length=40, default='Europe/Moscow', choices=TimeZone.zones_list())
     is_active = models.BooleanField(default=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
@@ -123,18 +127,6 @@ class ForecastTemplate(models.Model):
         ordering = ['location', 'forecast_source']
         unique_together = ('forecast_source', 'location')
 
-
-    # def clean(self):
-    #     try:
-    #         source_root_url = self.forecast_source.url
-    #         print(source_root_url)
-    #     finally:
-    #         if not re.search(f'^{source_root_url}*$', self.url) and self.url:
-    #             raise ValidationError('This url from another site.')
-    #         # RegexValidator(r'^ZZZ*$', 'Only Z.')
-    #         # if self.url == 'draft' and self.pub_date is not None:
-
-
     # Getting local datetime at forecast location
     def local_datetime(self):
         return self.location.local_datetime()
@@ -175,10 +167,6 @@ class ForecastTemplate(models.Model):
 
             start_forecast_datetime = template.start_forecast_datetime()
             logger.debug(f'SFDT: {start_forecast_datetime}')
-
-            # # Full pass to forecast source
-            # forecast_url = template.forecast_source.url + \
-            #     template.location_relative_url
 
             # Getting json_data from calling source scraper function
             scraper_func = getattr(forecasts, template.forecast_source.id)
@@ -256,11 +244,13 @@ class Forecast(models.Model):
     forecast_datetime = models.DateTimeField()
     prediction_range_hours = models.IntegerField()
     forecast_data = models.JSONField()
-    
+
     class Meta:
         indexes = [
             models.Index(fields=["scraped_datetime", "forecast_template"]),
-            models.Index(fields=["forecast_template", "prediction_range_hours", "forecast_datetime"]),
+            models.Index(fields=["forecast_template",
+                                 "prediction_range_hours",
+                                 "forecast_datetime"]),
         ]
 
     def is_actual(self):

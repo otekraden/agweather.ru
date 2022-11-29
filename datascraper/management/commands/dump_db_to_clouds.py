@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
         logger.info("> START")
 
-        dt = datetime.now().strftime("%d-%m-%Y_%H:%M:%S")
+        dt = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         filename = f"{dt}_dump_db.json"
 
         with open(filename, "w") as f:

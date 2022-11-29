@@ -14,7 +14,7 @@ def arch_rp5(start_datetime: datetime, url, end_datetime=None):
     #  Default archive beginning 01.01.2022 00:00 local time
     if not end_datetime:
         end_datetime = start_datetime.replace(
-            year=2022, month=1, day=1, hour=0)
+            year=2023, month=5, day=1, hour=0)
         step_option = '30'  # 30 days
     else:
         step_option = '1'  # 1 day

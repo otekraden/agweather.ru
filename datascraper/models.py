@@ -142,7 +142,7 @@ class ForecastTemplate(models.Model):
         return f"{self.forecast_source} --> {self.location}"
 
     @classmethod
-    def scrap_forecasts(cls, forecast_source_id):
+    def scrap_forecasts(cls, forecast_source_id=False):
 
         logger = init_logger('Forecast scraper')
         logger.info("START")

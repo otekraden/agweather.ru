@@ -32,21 +32,39 @@ def validate_first_upper(value):
 ########
 
 
-def get_timezone_choices():
-    choices = get_soup(
-        'https://en.wikipedia.org/wiki/List_of_tz_database_time_zones')
-    choices = choices.tbody.find_all('tr')[2:]
-    choices = [item.td.find_next_sibling().get_text().strip()
-               for item in choices]
-    return [(item, item) for item in choices]
+class TimeZone(models.Model):
+    name = models.CharField(max_length=50)
+
+    @classmethod
+    def scrap_zones(cls):
+        logger = init_logger('TimeZone scraper')
+
+        try:
+            tzones = get_soup(
+                'https://en.wikipedia.org/wiki/List_of_tz_database_time_zones')
+            tzones = tzones.tbody.find_all('tr')[2:]
+            tzones = (tz.td.find_next_sibling().get_text().strip() for tz in
+                      tzones)
+
+        except Exception as e:
+            logger.critical(f'FAILED to scrap TimeZones: {e}')
+            exit()
+
+        cls.objects.all().delete()
+        for tz in tzones:
+            cls.objects.create(name=tz)
+
+    @classmethod
+    def zones_list(cls):
+        return [(tz.name, tz.name) for tz in cls.objects.all()]
 
 
 class Location(models.Model):
     name = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
     region = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
     country = models.CharField(max_length=30, validators=[alpha, validate_first_upper])
-    timezone = models.CharField(
-        max_length=40, default='Europe/Moscow', choices=get_timezone_choices())
+    timezone = models.CharField(max_length=40, default='Europe/Moscow',
+                                choices=TimeZone.zones_list())
     is_active = models.BooleanField(default=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 

@@ -75,6 +75,10 @@ class Location(models.Model):
     class Meta:
         unique_together = ('name', 'region', 'country')
 
+    @classmethod
+    def locations_list(cls):
+        return [location for location in cls.objects.filter(is_active=True)]
+
     # Getting local datetime at location
     def local_datetime(self):
         return timezone.localtime(timezone=zoneinfo.ZoneInfo(self.timezone))

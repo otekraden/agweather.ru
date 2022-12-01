@@ -9,7 +9,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from .models import User, Profile
-from website.views import LOCATIONS
+from datascraper.models import Location
 from forum.models import Post
 
 ##################
@@ -101,7 +101,7 @@ def edit_user_profile(request, username):
 
     context = {'user_form': user_form,
                'profile_form': profile_form,
-               'locations': LOCATIONS,
+               'locations': Location.locations_list(),
                'avatar': profile.avatar.url, }
 
     return render(request, 'user_profile/edit_user_profile.html', context)

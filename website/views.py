@@ -332,6 +332,7 @@ def default_location(request):
 def get_profile(request):
     return Profile.objects.get(user=request.user)
 
+
 class LocationCreateView(LoginRequiredMixin, CreateView):
     model = Location
     fields = ['name', 'region', 'country', 'timezone']
@@ -363,7 +364,8 @@ class WeatherWizard(LoginRequiredMixin, SessionWizardView):
             forecast_source_from_step1 = step1_data['forecast_source']
             sample_source_url_from_step1 = ForecastTemplate.objects.filter(
                 forecast_source=forecast_source_from_step1)[0].url
-            context['sample_source_url_from_step1'] = sample_source_url_from_step1
+            context['sample_source_url_from_step1'] = \
+                sample_source_url_from_step1
 
         finally:
             return context

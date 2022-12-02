@@ -272,12 +272,11 @@ def month_name_to_number(name):
     if name == 'май':
         return 5
 
-    month_tuple = ('',
-                   'янв', 'фев', 'мар', 'апр', 'мая', 'июн',  # RUS
+    month_tuple = ('янв', 'фев', 'мар', 'апр', 'мая', 'июн',  # RUS
                    'июл', 'авг', 'сен', 'окт', 'ноя', 'дек',
                    'jan', 'feb', 'mar', 'apr', 'may', 'jun',  # ENG
                    'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
-    return month_tuple.index(name) % 12
+    return month_tuple.index(name) % 12 + 1
 
 
 def generate_forecasts(

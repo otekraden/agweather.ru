@@ -1,6 +1,8 @@
 from django import forms
 from .views import ForecastTemplate
 from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
+
 
 class ConnectSourceForm1(forms.ModelForm):
 
@@ -15,14 +17,29 @@ class ConnectSourceForm2(forms.ModelForm):
         model = ForecastTemplate
         fields = ['url']
 
-    # def clean_url(self):
-    #     data = self.cleaned_data["url"]
-    #     # print(self.cleaned_data['forecast_source'])
-    #     # self.instance.f
-        
-    #     if "yandex" not in data:
-    #         raise ValidationError("Source url is invalid!")
+    def __init__(self, *args, **kwargs):
+        self.forecast_source = kwargs.pop("forecast_source")
+        super(ConnectSourceForm2, self).__init__(*args, **kwargs)
 
-    #     # Always return a value to use as the new cleaned data, even if
-    #     # this method didn't change it.
-    #     return data
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if cleaned_data is not None:
+            url = cleaned_data.get("url")
+            try:
+                validate_url = URLValidator()
+                validate_url(url)
+            except ValidationError:
+                self.add_error(
+                    'url', ValidationError("This input is not Url."), )
+            else:
+                if not url.startswith(self.forecast_source.url):
+                    self.add_error('url', ValidationError(
+                        "This URL doesn’t belong to the Domain of the Source \
+                            you previously selected."),)
+
+        return cleaned_data
+
+
+class ConnectSourceForm3(forms.Form):
+    pass

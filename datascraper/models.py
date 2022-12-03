@@ -7,7 +7,7 @@ import collections
 from datascraper.logging import init_logger
 from datascraper.forecasts import get_soup
 from django.contrib.auth.models import User
-from django.core.validators import RegexValidator, URLValidator
+from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 
 ##############
@@ -16,7 +16,6 @@ from django.core.exceptions import ValidationError
 
 
 alpha = RegexValidator(r'^[a-zA-Z]*$', 'Only roman characters are allowed.')
-source_url_validator = URLValidator(message='It is not Url.')
 
 
 def validate_first_upper(value):
@@ -78,6 +77,13 @@ class Location(models.Model):
     # Getting local datetime at location
     def local_datetime(self):
         return timezone.localtime(timezone=zoneinfo.ZoneInfo(self.timezone))
+    
+    # Calculating start forecast datetime
+    def start_forecast_datetime(self):
+        # Calculating start forecast datetime
+        # Forecasts step is 1 hour
+        return self.local_datetime().replace(
+            minute=0, second=0, microsecond=0) + timedelta(hours=1)
 
     @classmethod
     def locations_list(cls):
@@ -121,8 +127,7 @@ class ForecastTemplate(models.Model):
         ForecastSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     url = models.CharField(
-        max_length=200,
-        validators=[source_url_validator,],
+        max_length=500,
         unique=True)
     last_scraped = models.DateTimeField(default=datetime.fromtimestamp(0))
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -130,17 +135,6 @@ class ForecastTemplate(models.Model):
     class Meta:
         ordering = ['location', 'forecast_source']
         unique_together = ('forecast_source', 'location')
-
-    # Getting local datetime at forecast location
-    def local_datetime(self):
-        return self.location.local_datetime()
-
-    # Calculating start forecast datetime
-    def start_forecast_datetime(self):
-        # Calculating start forecast datetime
-        # Forecasts step is 1 hour
-        return self.local_datetime().replace(
-            minute=0, second=0, microsecond=0) + timedelta(hours=1)
 
     def __str__(self):
         return f"{self.forecast_source} --> {self.location}"
@@ -166,10 +160,10 @@ class ForecastTemplate(models.Model):
 
             logger.debug(template)
 
-            local_datetime = template.local_datetime()
+            local_datetime = template.location.local_datetime()
             logger.debug(f'LDT: {local_datetime}')
 
-            start_forecast_datetime = template.start_forecast_datetime()
+            start_forecast_datetime = template.location.start_forecast_datetime()
             logger.debug(f'SFDT: {start_forecast_datetime}')
 
             # Getting json_data from calling source scraper function
@@ -289,7 +283,6 @@ class ArchiveTemplate(models.Model):
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     url = models.CharField(
         max_length=200,
-        validators=[source_url_validator,],
         unique=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 

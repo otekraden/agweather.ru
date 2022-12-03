@@ -3,10 +3,11 @@
 {% block above_form %}
     
     <div "h6 text-gray-400 mb-4">
-        <p class="h6 text-gray-400 mb-2">On this step you need to input Url to source webpage from where data will be scraping.</p>
-        <p class="h6 text-gray-400 mb-2">Follow Sample url below and find desired location by analogy:</p>
-        <a href="{{ sample_source_url }}" target="_blank" rel="noopener noreferrer">{{ sample_source_url }}</a>
-        <p class="h6 text-gray-400 my-2">Finally copy from browser address line Url and paste it below:</p>
+        <p class="h6 text-gray-400 mb-2">The template is ready to be created.</p>
+        <p class="h6 text-gray-400 mb-2">To make sure there are no errors, manually check First and Last records of the newly scraped data:</p>
+
+        <table class="table table-bordered dataTable">{{ scraped_forecasts }}</table>
+
     </div>
         
 {% endblock %}

@@ -1,12 +1,11 @@
 from datascraper.models import ForecastSource
-from django.contrib.auth import get_user_model
 from user_profile.models import Profile, User
 
 
 def add_variable_to_context(request):
 
     context_add = {
-            'forecast_sources': ForecastSource.dropdown_list(),}
+            'forecast_sources': ForecastSource.dropdown_list(), }
 
     username = request.user.username
     if username:

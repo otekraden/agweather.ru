@@ -17,7 +17,7 @@
     <button type="submit" form="step_form" class="btn btn-outline-info">Next</button>   
     {% if wizard.steps.prev %}
     {% comment %} <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">First step</button> {% endcomment %}
-    {% comment %} <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Prev step</button> {% endcomment %}
+    <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Back</button>
     {% endif %}
 
 {% endblock %}

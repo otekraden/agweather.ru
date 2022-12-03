@@ -13,6 +13,8 @@ from django.views.generic import CreateView
 from formtools.wizard.views import SessionWizardView
 from website import forms
 from django.http import HttpResponse
+from datascraper import forecasts
+from django.utils.html import format_html
 
 
 WEATHER_PARAMETERS = [
@@ -49,7 +51,8 @@ def forecast(request):
         location=location_object)
 
     # Calculating start forecast datetime
-    start_forecast_datetime = forecast_templates[0].start_forecast_datetime()
+    start_forecast_datetime = \
+        forecast_templates[0].location.start_forecast_datetime()
 
     # Generating datetime row
     datetime_row, datetime_ = [], start_forecast_datetime
@@ -341,27 +344,54 @@ class LocationCreateView(LoginRequiredMixin, CreateView):
 
 
 FORMS = [("step1", forms.ConnectSourceForm1),
-         ("step2", forms.ConnectSourceForm2),]
+         ("step2", forms.ConnectSourceForm2),
+         ("step3", forms.ConnectSourceForm3), ]
 
 TEMPLATES = {"step1": "website/connect_source/step1.html",
-             "step2": "website/connect_source/step2.html"}
+             "step2": "website/connect_source/step2.html",
+             "step3": "website/connect_source/step3.html", }
 
 
 class WeatherWizard(LoginRequiredMixin, SessionWizardView):
+    form_list = FORMS
 
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
-        # get the value from step 1
-        try:
-            step1_data = self.get_cleaned_data_for_step('step1')
-            forecast_source_from_step1 = step1_data['forecast_source']
-            sample_source_url_from_step1 = ForecastTemplate.objects.filter(
-                forecast_source=forecast_source_from_step1)[0].url
-            context['sample_source_url_from_step1'] = \
-                sample_source_url_from_step1
+    def get_context_data(self, form, **kwargs):
+        context = super().get_context_data(form=form, **kwargs)
 
-        finally:
-            return context
+        if self.steps.current != 'step1':
+            forecast_source = \
+                self.get_cleaned_data_for_step('step1').get('forecast_source')
+
+        if self.steps.current == 'step2':
+            context.update(
+                {'sample_source_url': ForecastTemplate.objects.filter(
+                    forecast_source=forecast_source)[0].url})
+
+        elif self.steps.current == 'step3':
+            scraper_func = getattr(forecasts, forecast_source.id)
+            url = self.get_cleaned_data_for_step('step2').get('url')
+            location = self.get_cleaned_data_for_step('step1').get('location')
+            start_forecast_datetime = location.start_forecast_datetime()
+            try:
+                scraped_forecasts = scraper_func(start_forecast_datetime, url)
+                scraped_forecasts = (
+                    scraped_forecasts[0], scraped_forecasts[-1])
+                scraped_forecasts = [
+                    f'<td>{f[0]}</td><td>{f[1]}</td>'
+                    for f in scraped_forecasts]
+
+                for i in scraped_forecasts:
+                    print(i)
+
+                data_json = ''.join(
+                    [f'<tr>{f}</tr>' for f in scraped_forecasts])
+
+                context.update({'scraped_forecasts': format_html(data_json)})
+
+            except Exception as e:
+                context.update({'scraped_forecasts': f'ERROR:{e}'})
+
+        return context
 
     def get_template_names(self):
         return [TEMPLATES[self.steps.current]]
@@ -378,3 +408,13 @@ class WeatherWizard(LoginRequiredMixin, SessionWizardView):
         location.save()
 
         return HttpResponse(form_data.items())
+
+    def get_form_kwargs(self, step=None):
+
+        if step == "step2":
+            forecast_source = \
+                self.get_cleaned_data_for_step("step1").get("forecast_source")
+
+            return {"forecast_source": forecast_source}
+
+        return {}

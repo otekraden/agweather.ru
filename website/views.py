@@ -19,13 +19,6 @@ WEATHER_PARAMETERS = [
     f'{par.name}, {par.meas_unit}' for par in WeatherParameter.objects.all()]
 
 
-def location_list():
-    return tuple(map(str, Location.objects.filter(is_active=True)))
-
-
-LOCATIONS = location_list()
-
-
 def forecast(request):
 
     if request.method == 'GET':
@@ -121,7 +114,7 @@ def forecast(request):
                        }
 
     context = {
-        'locations': LOCATIONS,
+        'locations': Location.locations_list(),
         'location': location,
         'weather_parameters': WEATHER_PARAMETERS,
         'weather_parameter': weather_parameter,
@@ -281,7 +274,7 @@ def archive(request):
                        }
 
     context = {
-        'locations': LOCATIONS,
+        'locations': Location.locations_list(),
         'location': location,
         'weather_parameters': WEATHER_PARAMETERS,
         'weather_parameter': weather_parameter,
@@ -326,7 +319,7 @@ def check_int_input(value, min, max, default):
 def default_location(request):
     if request.user.is_authenticated:
         return str(get_profile(request).favorite_location)
-    return LOCATIONS[1]
+    return Location.locations_list()[1]
 
 
 def get_profile(request):
@@ -374,7 +367,6 @@ class WeatherWizard(LoginRequiredMixin, SessionWizardView):
         return [TEMPLATES[self.steps.current]]
 
     def done(self, form_list, **kwargs):
-        global LOCATIONS
         form_data = {}
         for form in form_list:
             for key, value in form.cleaned_data.items():
@@ -384,6 +376,5 @@ class WeatherWizard(LoginRequiredMixin, SessionWizardView):
         location = template.location
         location.is_active = True
         location.save()
-        LOCATIONS = location_list()
 
         return HttpResponse(form_data.items())

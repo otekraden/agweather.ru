@@ -79,6 +79,10 @@ class Location(models.Model):
     def local_datetime(self):
         return timezone.localtime(timezone=zoneinfo.ZoneInfo(self.timezone))
 
+    @classmethod
+    def locations_list(cls):
+        return tuple(map(str, cls.objects.filter(is_active=True)))
+
     def __str__(self):
         return f'{self.name}, {self.region}, {self.country}'
 

@@ -3,7 +3,7 @@
 {% block above_form %}
     
     <div "h6 text-gray-400 mb-4">
-        <p class="h6 text-gray-400 mb-2">The template is ready to be created.</p>
+        <p class="h6 text-gray-400 mb-2">The Forecast Template is ready to be created.</p>
         <p class="h6 text-gray-400 mb-2">To make sure there are no errors, manually check First and Last records of the newly scraped data:</p>
 
         <table class="table table-bordered dataTable">{{ scraped_forecasts }}</table>
@@ -13,11 +13,4 @@
 {% endblock %}
 
 {% block below_form %}
-
-    <button type="submit" form="step_form" class="btn btn-outline-info">Next</button>
-    {% if wizard.steps.prev %}
-    {% comment %} <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">First step</button> {% endcomment %}
-    <button class="btn btn-outline-info" name="wizard_goto_step" type="submit" form="step_form" formnovalidate="formnovalidate" value="{{ wizard.steps.prev }}">Back</button>
-    {% endif %}
-
 {% endblock %}

@@ -1,10 +1,17 @@
 {% extends "user_profile/base_container.html" %}
 {% block inner_content %}
 
+    <div class="text-center">
+        <p class="h6 text-gray-400 mb-4">To create new location fill in the form below:</p>
+    </div>
+
     <form method="post">
         {% csrf_token %}
         {% include 'website/bs4_form.html' with form=form %}
-        <button type="submit" class="btn btn-outline-info">Create location</button>
+        <button type="submit" class="btn btn-outline-success">Save Location</button>
+        <a href="{% url 'website:forecast' %}">
+            <button class="btn btn-outline-danger" type="button">Cancel</button>
+        </a>
     </form>
 
 {% endblock %} 

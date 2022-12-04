@@ -1,0 +1,12 @@
+{% extends "user_profile/base_container.html" %}
+
+{% block inner_content %}
+	<div class="text-center col">
+	    <p class="text-gray-400 mb-4">Template successfully created.</p>
+		
+		<a href="{% url 'website:add_forecast_template' %}">
+			<button class="btn btn-outline-info" type="button">Create Next Template</button>
+		</a>
+
+    </div>
+{% endblock %}

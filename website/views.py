@@ -12,7 +12,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView
 from formtools.wizard.views import SessionWizardView
 from website import forms
-from django.http import HttpResponse
 from datascraper import forecasts
 from django.utils.html import format_html
 
@@ -352,7 +351,7 @@ TEMPLATES = {"step1": "website/connect_source/step1.html",
              "step3": "website/connect_source/step3.html", }
 
 
-class WeatherWizard(LoginRequiredMixin, SessionWizardView):
+class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
     form_list = FORMS
 
     def get_context_data(self, form, **kwargs):
@@ -407,7 +406,10 @@ class WeatherWizard(LoginRequiredMixin, SessionWizardView):
         location.is_active = True
         location.save()
 
-        return HttpResponse(form_data.items())
+        # return HttpResponse(form_data.items())
+        return render(self.request, 'website/connect_source/done.html', {
+            'form_data': [form.cleaned_data for form in form_list],
+        })
 
     def get_form_kwargs(self, step=None):
 

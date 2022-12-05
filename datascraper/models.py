@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 ##############
 
 
-alpha = RegexValidator(r'^[a-zA-Z]*$', 'Only roman characters are allowed.')
+alpha = RegexValidator(r'^[a-zA-Z ]*$', 'Only roman characters are allowed.')
 
 
 def validate_first_upper(value):

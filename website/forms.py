@@ -5,15 +5,16 @@ from django.core.validators import URLValidator
 from django.db.models import Count
 
 
-class ConnectSourceForm1(forms.Form):
+class ConnectSourceForm1(forms.ModelForm):
 
-    location_queryset = Location.objects.annotate(
-        num_templates=Count("forecasttemplate")).filter(
-            num_templates__lt=ForecastSource.objects.count())
+    class Meta:
+        model = ForecastTemplate
+        fields = ['location', 'forecast_source']
 
-    location = forms.ModelChoiceField(queryset=location_queryset)
-    forecast_source = forms.ModelChoiceField(
-        queryset=ForecastSource.objects.all())
+    location = forms.ModelChoiceField(
+        queryset=Location.objects.annotate(
+            num_templates=Count("forecasttemplate")).filter(
+            num_templates__lt=ForecastSource.objects.count()))
 
 
 class ConnectSourceForm2(forms.ModelForm):

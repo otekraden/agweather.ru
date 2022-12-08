@@ -1,14 +1,19 @@
 from django import forms
-from .views import ForecastTemplate
+from datascraper.models import (Location, ForecastTemplate, ForecastSource, )
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
+from django.db.models import Count
 
 
-class ConnectSourceForm1(forms.ModelForm):
+class ConnectSourceForm1(forms.Form):
 
-    class Meta:
-        model = ForecastTemplate
-        fields = ['location', 'forecast_source']
+    location_queryset = Location.objects.annotate(
+        num_templates=Count("forecasttemplate")).filter(
+            num_templates__lt=ForecastSource.objects.count())
+
+    location = forms.ModelChoiceField(queryset=location_queryset)
+    forecast_source = forms.ModelChoiceField(
+        queryset=ForecastSource.objects.all())
 
 
 class ConnectSourceForm2(forms.ModelForm):

@@ -336,6 +336,9 @@ class LocationCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user
         form.instance.is_active = False
+        self.object = form.save()
+        self.request.session['location_id'] = form.instance.pk
+        self.request.session['location'] = str(form.instance)
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -406,7 +409,8 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
         location.is_active = True
         location.save()
 
-        # return HttpResponse(form_data.items())
+        self.request.session['location_id'] = location.id
+        self.request.session['location'] = str(location)
         return render(self.request, 'website/connect_source/done.html', {
             'form_data': [form.cleaned_data for form in form_list],
         })
@@ -420,3 +424,14 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
             return {"forecast_source": forecast_source}
 
         return {}
+
+    def get_form_initial(self, step):
+        initial = self.initial_dict.get(step, {})
+        if step == 'step1':
+            try:
+                location = Location.objects.get(
+                    pk=self.request.session.get('location_id'))
+                initial.update({'location': location})
+            except Location.DoesNotExist:
+                pass
+        return initial

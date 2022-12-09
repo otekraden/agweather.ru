@@ -45,6 +45,7 @@ def forecast(request):
     weather_parameter_index = WEATHER_PARAMETERS.index(weather_parameter)
 
     location_object = location_object_from_input(location)
+    request.session['location_id'] = location_object.id
 
     forecast_templates = ForecastTemplate.objects.filter(
         location=location_object)
@@ -166,6 +167,7 @@ def archive(request):
     weather_parameter_index = WEATHER_PARAMETERS.index(weather_parameter)
 
     location_object = location_object_from_input(location)
+    request.session['location_id'] = location_object.id
     archive_templates = ArchiveTemplate.objects.filter(
         location=location_object)
     forecast_templates = ForecastTemplate.objects.filter(

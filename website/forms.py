@@ -5,7 +5,7 @@ from django.core.validators import URLValidator
 from django.db.models import Count
 
 
-class ConnectSourceForm1(forms.ModelForm):
+class ForecastTemplate1(forms.ModelForm):
 
     class Meta:
         model = ForecastTemplate
@@ -17,7 +17,7 @@ class ConnectSourceForm1(forms.ModelForm):
             num_templates__lt=ForecastSource.objects.count()))
 
 
-class ConnectSourceForm2(forms.ModelForm):
+class ForecastTemplate2(forms.ModelForm):
 
     class Meta:
         model = ForecastTemplate
@@ -25,7 +25,7 @@ class ConnectSourceForm2(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.forecast_source = kwargs.pop("forecast_source")
-        super(ConnectSourceForm2, self).__init__(*args, **kwargs)
+        super(ForecastTemplate2, self).__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -47,5 +47,5 @@ class ConnectSourceForm2(forms.ModelForm):
         return cleaned_data
 
 
-class ConnectSourceForm3(forms.Form):
+class ForecastTemplate3(forms.Form):
     pass

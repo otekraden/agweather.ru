@@ -347,34 +347,34 @@ class LocationCreateView(LoginRequiredMixin, CreateView):
         return reverse('website:add_forecast_template')
 
 
-FORMS = [("step1", forms.ConnectSourceForm1),
-         ("step2", forms.ConnectSourceForm2),
-         ("step3", forms.ConnectSourceForm3), ]
+FORECAST_FORMS = [("f1", forms.ForecastTemplate1),
+                  ("f2", forms.ForecastTemplate2),
+                  ("f3", forms.ForecastTemplate3), ]
 
-TEMPLATES = {"step1": "website/connect_source/step1.html",
-             "step2": "website/connect_source/step2.html",
-             "step3": "website/connect_source/step3.html", }
+FORECAST_TEMPLATES = {"f1": "website/template_wizard/f1.html",
+                      "f2": "website/template_wizard/f2.html",
+                      "f3": "website/template_wizard/f3.html", }
 
 
 class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
-    form_list = FORMS
+    form_list = FORECAST_FORMS
 
     def get_context_data(self, form, **kwargs):
         context = super().get_context_data(form=form, **kwargs)
 
-        if self.steps.current != 'step1':
+        if self.steps.current != 'f1':
             forecast_source = \
-                self.get_cleaned_data_for_step('step1').get('forecast_source')
+                self.get_cleaned_data_for_step('f1').get('forecast_source')
 
-        if self.steps.current == 'step2':
+        if self.steps.current == 'f2':
             context.update(
                 {'sample_source_url': ForecastTemplate.objects.filter(
                     forecast_source=forecast_source)[0].url})
 
-        elif self.steps.current == 'step3':
+        elif self.steps.current == 'f3':
             scraper_func = getattr(forecasts, forecast_source.id)
-            url = self.get_cleaned_data_for_step('step2').get('url')
-            location = self.get_cleaned_data_for_step('step1').get('location')
+            url = self.get_cleaned_data_for_step('f2').get('url')
+            location = self.get_cleaned_data_for_step('f1').get('location')
             start_forecast_datetime = location.start_forecast_datetime()
             try:
                 scraped_forecasts = scraper_func(start_forecast_datetime, url)
@@ -383,9 +383,6 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
                 scraped_forecasts = [
                     f'<td>{f[0]}</td><td>{f[1]}</td>'
                     for f in scraped_forecasts]
-
-                for i in scraped_forecasts:
-                    print(i)
 
                 data_json = ''.join(
                     [f'<tr>{f}</tr>' for f in scraped_forecasts])
@@ -398,7 +395,7 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
         return context
 
     def get_template_names(self):
-        return [TEMPLATES[self.steps.current]]
+        return [FORECAST_TEMPLATES[self.steps.current]]
 
     def done(self, form_list, **kwargs):
         form_data = {}
@@ -413,15 +410,15 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
 
         self.request.session['location_id'] = location.id
         self.request.session['location'] = str(location)
-        return render(self.request, 'website/connect_source/done.html', {
+        return render(self.request, 'website/template_wizard/f_done.html', {
             'form_data': [form.cleaned_data for form in form_list],
         })
 
     def get_form_kwargs(self, step=None):
 
-        if step == "step2":
+        if step == "f2":
             forecast_source = \
-                self.get_cleaned_data_for_step("step1").get("forecast_source")
+                self.get_cleaned_data_for_step("f1").get("forecast_source")
 
             return {"forecast_source": forecast_source}
 
@@ -429,7 +426,7 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
 
     def get_form_initial(self, step):
         initial = self.initial_dict.get(step, {})
-        if step == 'step1':
+        if step == 'f1':
             try:
                 location = Location.objects.get(
                     pk=self.request.session.get('location_id'))

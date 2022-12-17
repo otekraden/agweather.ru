@@ -2,20 +2,20 @@
 
 {% block inner_content %}
 	<div class="text-center col">
-	    <p class="text-gray-400 mb-4 row">Template successfully created.</p>
+	    <p class="text-gray-400 mb-4 row">Forecast Template successfully created.</p>
 		<p class="text-gray-400 mb-4 row">Choose what to do next:</p>
 		
 		<a class="mb-4 row" href="{% url 'website:add_forecast_template' %}">
-			<button class="btn btn-outline-info" type="button">Create Next Template</button>
+			<button class="btn btn-outline-info" type="button">Create Next Forecast Template</button>
 		</a>
-
+		
 		<a class="mb-4 row" href="{% url 'website:forecast' %}">
 			<button class="btn btn-outline-success" type="button">Go to Forecast page</button>
 		</a>
-
-		{% comment %} <a class="mb-4 row" href="{% url 'website:archive' %}">
-			<button class="btn btn-outline-success" type="button">Go to Archive page</button>
-		</a> {% endcomment %}
-
+		
+		<a class="mb-4 row" href="{% url 'website:add_archive_template' %}">
+			<button class="btn btn-outline-warning" type="button">Create Archive Template</button>
+		</a>
+		
     </div>
 {% endblock %}

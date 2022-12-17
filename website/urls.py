@@ -14,4 +14,6 @@ urlpatterns = [
          name="add_location"),
     path('add_forecast_template/', views.ForecastTemplateWizard.as_view(),
          name="add_forecast_template"),
+    path('add_archive_template/', views.ArchiveTemplateWizard.as_view(),
+         name="add_archive_template"),
 ]

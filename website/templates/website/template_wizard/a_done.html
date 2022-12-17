@@ -1,0 +1,17 @@
+{% extends "user_profile/base_container.html" %}
+
+{% block inner_content %}
+	<div class="text-center col">
+	    <p class="text-gray-400 mb-4 row">Archive Template successfully created.</p>
+		<p class="text-gray-400 mb-4 row">Choose what to do next:</p>
+		
+		<a class="mb-4 row" href="{% url 'website:archive' %}">
+			<button class="btn btn-outline-success" type="button">Go to Archive page</button>
+		</a>
+
+		<a class="mb-4 row" href="{% url 'website:add_forecast_template' %}">
+			<button class="btn btn-outline-warning" type="button">Create Forecast Template</button>
+		</a>
+		
+    </div>
+{% endblock %}

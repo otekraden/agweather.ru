@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from datascraper.models import (
     WeatherParameter, Location, ForecastTemplate, Forecast,
-    ArchiveTemplate, Archive)
+    ArchiveTemplate, Archive, ArchiveSource)
 from backports import zoneinfo
 from django.utils import timezone
 from datetime import timedelta, datetime
@@ -13,7 +13,9 @@ from django.views.generic import CreateView
 from formtools.wizard.views import SessionWizardView
 from website import forms
 from datascraper import forecasts
+from datascraper.archive import arch_rp5
 from django.utils.html import format_html
+from django.http import HttpResponse
 
 
 WEATHER_PARAMETERS = [
@@ -49,6 +51,9 @@ def forecast(request):
 
     forecast_templates = ForecastTemplate.objects.filter(
         location=location_object)
+
+    if not forecast_templates:
+        return HttpResponse(f"No forecast templates fo location {location}.")
 
     # Calculating start forecast datetime
     start_forecast_datetime = \
@@ -278,7 +283,7 @@ def archive(request):
                        }
 
     context = {
-        'locations': Location.locations_list(),
+        'locations': Location.locations_list("archivetemplate"),
         'location': location,
         'weather_parameters': WEATHER_PARAMETERS,
         'weather_parameter': weather_parameter,
@@ -330,6 +335,10 @@ def get_profile(request):
     return Profile.objects.get(user=request.user)
 
 
+################
+# CONTRIBUTION #
+################
+
 class LocationCreateView(LoginRequiredMixin, CreateView):
     model = Location
     fields = ['name', 'region', 'country', 'timezone']
@@ -337,10 +346,10 @@ class LocationCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        form.instance.is_active = False
+        # form.instance.is_active = False
         self.object = form.save()
         self.request.session['location_id'] = form.instance.pk
-        self.request.session['location'] = str(form.instance)
+        # self.request.session['location'] = str(form.instance)
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -352,7 +361,7 @@ FORECAST_FORMS = [("f1", forms.ForecastTemplate1),
                   ("f3", forms.ForecastTemplate3), ]
 
 FORECAST_TEMPLATES = {"f1": "website/template_wizard/f1.html",
-                      "f2": "website/template_wizard/f2.html",
+                      "f2": "website/template_wizard/af2.html",
                       "f3": "website/template_wizard/f3.html", }
 
 
@@ -405,8 +414,8 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
 
         template = ForecastTemplate.objects.create(**form_data)
         location = template.location
-        location.is_active = True
-        location.save()
+        # location.is_active = True
+        # location.save()
 
         self.request.session['location_id'] = location.id
         self.request.session['location'] = str(location)
@@ -432,5 +441,90 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
                     pk=self.request.session.get('location_id'))
                 initial.update({'location': location})
             except Location.DoesNotExist:
+                pass
+        return initial
+
+
+ARCHIVE_FORMS = [("a1", forms.ArchiveTemplate1),
+                 ("a2", forms.ArchiveTemplate2),
+                 ("a3", forms.ArchiveTemplate3),
+                 ]
+
+ARCHIVE_TEMPLATES = {"a1": "website/template_wizard/a1.html",
+                     "a2": "website/template_wizard/af2.html",
+                     "a3": "website/template_wizard/a3.html",
+                     }
+
+
+class ArchiveTemplateWizard(LoginRequiredMixin, SessionWizardView):
+    form_list = ARCHIVE_FORMS
+
+    def get_context_data(self, form, **kwargs):
+        context = super().get_context_data(form=form, **kwargs)
+
+        if self.steps.current != 'a1':
+            archive_source = \
+                self.get_cleaned_data_for_step('a1').get('archive_source')
+
+        if self.steps.current == 'a2':
+            context.update(
+                {'sample_source_url': ArchiveTemplate.objects.filter(
+                    archive_source=archive_source)[0].url})
+
+        elif self.steps.current == 'a3':
+            url = self.get_cleaned_data_for_step('a2').get('url')
+            location = self.get_cleaned_data_for_step('a1').get('location')
+            start_archive_datetime = location.start_archive_datetime()
+            try:
+                archive_data = arch_rp5(start_archive_datetime, url)[0]
+                context.update({'archive_data': archive_data})
+
+            except Exception as e:
+                context.update({'archive_data': f'ERROR:{e}'})
+
+        return context
+
+    def get_template_names(self):
+        return [ARCHIVE_TEMPLATES[self.steps.current]]
+
+    def done(self, form_list, **kwargs):
+        form_data = {}
+        for form in form_list:
+            for key, value in form.cleaned_data.items():
+                form_data[key] = value
+
+        template = ArchiveTemplate.objects.create(**form_data)
+        location = template.location
+        # location.is_active = True
+        # location.save()
+
+        self.request.session['location_id'] = location.id
+        self.request.session['location'] = str(location)
+        return render(self.request, 'website/template_wizard/a_done.html', {
+            'form_data': [form.cleaned_data for form in form_list],
+        })
+
+    def get_form_kwargs(self, step=None):
+
+        if step == "a2":
+            archive_source = \
+                self.get_cleaned_data_for_step("a1").get("archive_source")
+
+            return {"archive_source": archive_source}
+
+        return {}
+
+    def get_form_initial(self, step):
+        initial = self.initial_dict.get(step, {})
+        if step == 'a1':
+            try:
+                location = Location.objects.get(
+                    pk=self.request.session.get('location_id'))
+                initial.update({'location': location})
+
+                archive_source = ArchiveSource.objects.get(id='rp5')
+                initial.update({'archive_source': archive_source})
+            # except (Location.DoesNotExist, ArchiveSource.DoesNotExist):
+            except ObjectDoesNotExist:
                 pass
         return initial

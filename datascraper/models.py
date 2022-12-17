@@ -9,13 +9,15 @@ from datascraper.forecasts import get_soup
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 
 ##############
 # VALIDATORS #
 ##############
 
 
-alpha = RegexValidator(r'^[a-zA-Z ]*$', 'Only roman characters are allowed.')
+alpha = RegexValidator(
+    r'^[a-zA-Z0-9 ]*$', 'Only roman characters are allowed.')
 
 
 def validate_first_upper(value):
@@ -77,7 +79,7 @@ class Location(models.Model):
     # Getting local datetime at location
     def local_datetime(self):
         return timezone.localtime(timezone=zoneinfo.ZoneInfo(self.timezone))
-    
+
     # Calculating start forecast datetime
     def start_forecast_datetime(self):
         # Calculating start forecast datetime
@@ -85,9 +87,14 @@ class Location(models.Model):
         return self.local_datetime().replace(
             minute=0, second=0, microsecond=0) + timedelta(hours=1)
 
+    def start_archive_datetime(self):
+        return self.start_forecast_datetime() - timedelta(hours=1)
+
     @classmethod
-    def locations_list(cls):
-        return tuple(map(str, cls.objects.filter(is_active=True)))
+    def locations_list(cls, template="forecasttemplate"):
+        return tuple(map(str, cls.objects.annotate(
+            num_templates=Count(template)).filter(
+            num_templates__gte=1, is_active=True).order_by('country', 'name')))
 
     def __str__(self):
         return f'{self.name}, {self.region}, {self.country}'
@@ -163,7 +170,8 @@ class ForecastTemplate(models.Model):
             local_datetime = template.location.local_datetime()
             logger.debug(f'LDT: {local_datetime}')
 
-            start_forecast_datetime = template.location.start_forecast_datetime()
+            start_forecast_datetime = \
+                template.location.start_forecast_datetime()
             logger.debug(f'SFDT: {start_forecast_datetime}')
 
             # Getting json_data from calling source scraper function
@@ -282,7 +290,7 @@ class ArchiveTemplate(models.Model):
         ArchiveSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     url = models.CharField(
-        max_length=200,
+        max_length=500,
         unique=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
@@ -304,17 +312,15 @@ class ArchiveTemplate(models.Model):
         for template in templates:
             logger.debug(template)
 
-            # Getting local datetime at archive location
+            # # Getting local datetime at archive location
             timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
-            local_datetime = timezone.localtime(timezone=timezone_info)
+            # local_datetime = timezone.localtime(timezone=timezone_info)
 
-            # Calculating start archive datetime
-            start_archive_datetime = local_datetime.replace(
-                minute=0, second=0, microsecond=0)
+            # # Calculating start archive datetime
+            # start_archive_datetime = local_datetime.replace(
+            #     minute=0, second=0, microsecond=0)
 
-            # # Full pass to archive source
-            # archive_url = template.archive_source.url + \
-            #     template.location_relative_url
+            start_archive_datetime = template.location.start_archive_datetime()
 
             try:
                 last_record_datetime = Archive.objects.filter(

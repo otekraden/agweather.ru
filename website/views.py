@@ -328,7 +328,7 @@ def check_int_input(value, min, max, default):
 def default_location(request):
     if request.user.is_authenticated:
         return str(get_profile(request).favorite_location)
-    return Location.locations_list()[1]
+    return str(Location.objects.get(name='Saint-Petersburg', country='Russia'))
 
 
 def get_profile(request):

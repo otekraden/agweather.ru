@@ -118,7 +118,7 @@ class WeatherParameter(models.Model):
 class ForecastSource(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=30)
-    url = models.CharField(max_length=200)
+    url = models.URLField(max_length=200, unique=True)
     chart_color = models.CharField(max_length=10)
 
     def __str__(self):
@@ -133,9 +133,7 @@ class ForecastTemplate(models.Model):
     forecast_source = models.ForeignKey(
         ForecastSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
-    url = models.CharField(
-        max_length=500,
-        unique=True)
+    url = models.URLField(max_length=500, unique=True)
     last_scraped = models.DateTimeField(default=datetime.fromtimestamp(0))
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
@@ -278,7 +276,7 @@ class Forecast(models.Model):
 class ArchiveSource(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=30)
-    url = models.CharField(max_length=200, unique=True)
+    url = models.URLField(max_length=200, unique=True)
     chart_color = models.CharField(max_length=10)
 
     def __str__(self):
@@ -289,9 +287,7 @@ class ArchiveTemplate(models.Model):
     archive_source = models.ForeignKey(
         ArchiveSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
-    url = models.CharField(
-        max_length=500,
-        unique=True)
+    url = models.URLField(max_length=500, unique=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:

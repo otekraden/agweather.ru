@@ -16,6 +16,7 @@ from datascraper import forecasts
 from datascraper.archive import arch_rp5
 from django.utils.html import format_html
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 
 
 WEATHER_PARAMETERS = [
@@ -528,3 +529,11 @@ class ArchiveTemplateWizard(LoginRequiredMixin, SessionWizardView):
             except ObjectDoesNotExist:
                 pass
         return initial
+
+
+@login_required
+def create_new_source(request):
+    return render(
+        request=request,
+        template_name='website/create_new_source.html',
+        context={'url': "https://github.com/venom812/agweather.online"})

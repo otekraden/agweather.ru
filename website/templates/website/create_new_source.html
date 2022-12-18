@@ -1,0 +1,11 @@
+{% extends "user_profile/base_container.html" %}
+
+{% block inner_content %}
+	<div class="text col">
+	    <p class="text-gray-400 mb-2 row">Creating a new weather source is not possible by filling out a simple form on a web page.<br/>
+			To do this, you need to write a scrapper class in the Python programming language for the desired weather site.<br/>
+			Follow the link below on GitHub where you can write a commit:</p>
+		<a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ url }}</a>
+		
+    </div>
+{% endblock %}

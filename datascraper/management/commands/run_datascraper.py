@@ -7,5 +7,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        ForecastTemplate.scrap_forecasts()
+        ForecastTemplate.run_scraper()
         ArchiveTemplate.scrap_archives()

@@ -4,25 +4,18 @@ from datetime import datetime
 from random import choice
 from datascraper.logging import init_logger
 
-PROXY_MODE = 0
-PROXIES = []
-
 
 def set_proxy():
 
-    global PROXY_MODE
-    global PROXIES
-
     logger = init_logger('Proxy setter')
 
-    if not PROXIES:
-        load_dotenv()
-        PROXIES = os.environ["PROXIES"].split('\n')
-        PROXIES = [p.split(':') for p in PROXIES]
-        logger.debug("Proxies list red from .env file")
+    load_dotenv()
+    PROXIES = os.environ["PROXIES"].split('\n')
+    PROXIES = [p.split(':') for p in PROXIES]
+    logger.debug("Proxies list red from .env file")
 
-        PROXY_MODE = int(os.environ["PROXY_MODE"])
-        logger.debug(f"Proxy mode red from .env file: {PROXY_MODE}")
+    PROXY_MODE = int(os.environ["PROXY_MODE"])
+    logger.debug(f"Proxy mode red from .env file: {PROXY_MODE}")
 
     if PROXY_MODE == 0:
         return None

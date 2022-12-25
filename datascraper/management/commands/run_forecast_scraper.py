@@ -13,4 +13,4 @@ class Command(BaseCommand):
 
         forecast_source_id = kwargs['forecast_source_id']
 
-        ForecastTemplate.scrap_forecasts(forecast_source_id)
+        ForecastTemplate.run_scraper(forecast_source_id)

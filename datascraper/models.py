@@ -239,7 +239,7 @@ class ForecastTemplate(models.Model):
             FS_LOGGER.critical(exp_report)
 
     @classmethod
-    def run_scraper(cls, forecast_source_id):
+    def run_scraper(cls, forecast_source_id=None):
         start_time = time()
         FS_LOGGER.info("START")
 

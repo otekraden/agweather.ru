@@ -10,8 +10,6 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Count
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import sys
 from time import sleep, time
 from random import random
@@ -193,23 +191,6 @@ class ForecastTemplate(models.Model):
 
         FS_LOGGER.debug(f'F: {self}')
 
-    @classmethod
-    async def run_class_scraper(cls, executor, forecast_source_id):
-
-        if not forecast_source_id:
-            templates = cls.objects.all()
-        else:
-            templates = cls.objects.filter(
-                forecast_source_id=forecast_source_id)
-
-        loop = asyncio.get_event_loop()
-
-        blocking_tasks = [
-            loop.run_in_executor(executor, template.run_template_scraper)
-            async for template in templates
-        ]
-        completed, pending = await asyncio.wait(blocking_tasks)
-
     # Checking for expired forecasts
     # whose data is more than an hour out of date
     @classmethod
@@ -240,9 +221,6 @@ class ForecastTemplate(models.Model):
 
     @classmethod
     def run_scraper(cls, forecast_source_id=None):
-        start_time = time()
-        FS_LOGGER.info("START")
-
         if forecast_source_id:
             try:
                 ForecastSource.objects.get(id=forecast_source_id)
@@ -250,14 +228,16 @@ class ForecastTemplate(models.Model):
                 FS_LOGGER.error(e)
                 exit()
 
-        executor = ThreadPoolExecutor()
-        event_loop = asyncio.get_event_loop()
+        if not forecast_source_id:
+            templates = cls.objects.all()
+        else:
+            templates = cls.objects.filter(
+                forecast_source_id=forecast_source_id)
 
-        try:
-            event_loop.run_until_complete(
-                cls.run_class_scraper(executor, forecast_source_id))
-        finally:
-            event_loop.close()
+        start_time = time()
+
+        for template in templates:
+            template.run_template_scraper()
 
         cls.check_expiration()
 

@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Count
+from time import time
 
 ##############
 # VALIDATORS #
@@ -115,6 +116,9 @@ class WeatherParameter(models.Model):
 ###################
 
 
+FS_LOGGER = init_logger('Forecast scraper')
+
+
 class ForecastSource(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=30)
@@ -144,85 +148,59 @@ class ForecastTemplate(models.Model):
     def __str__(self):
         return f"{self.forecast_source} --> {self.location}"
 
+    def run_template_scraper(self):
+
+        FS_LOGGER.debug(f'S: {self}')
+
+        local_datetime = self.location.local_datetime()
+        # FS_LOGGER.debug(f'LDT: {local_datetime}')
+
+        start_forecast_datetime = \
+            self.location.start_forecast_datetime()
+        # FS_LOGGER.debug(f'SFDT: {start_forecast_datetime}')
+
+        scraper_func = getattr(forecasts, self.forecast_source.id)
+
+        try:
+            scraped_forecasts = scraper_func(start_forecast_datetime, self.url)
+            self.last_scraped = local_datetime
+            self.save()
+
+        except Exception as e:
+            FS_LOGGER.error(f"{self}: {e}")
+            return
+
+        # FS_LOGGER.debug("Scraped forecasts: \n"+'\n'.join([
+        #     f'{f[0].isoformat()}, {f[1]}' for f in scraped_forecasts]))
+
+        for forecast in scraped_forecasts:
+
+            prediction_range_hours = int(
+                (forecast[0] - local_datetime.replace(
+                    minute=0, second=0, microsecond=0))/timedelta(hours=1))
+
+            Forecast.objects.update_or_create(
+                forecast_template=self,
+                forecast_datetime=forecast[0],
+                forecast_data=forecast[1],
+                prediction_range_hours=prediction_range_hours,
+                defaults={'scraped_datetime': local_datetime})
+
+        FS_LOGGER.debug(f'F: {self}')
+
+    # Checking for expired forecasts
+    # whose data is more than an hour out of date
     @classmethod
-    def scrap_forecasts(cls, forecast_source_id=False):
-
-        logger = init_logger('Forecast scraper')
-        logger.info("START")
-
-        if not forecast_source_id:
-            templates = cls.objects.all()
-        else:
-            try:
-                ForecastSource.objects.get(id=forecast_source_id)
-                templates = cls.objects.filter(
-                    forecast_source_id=forecast_source_id)
-            except ForecastSource.DoesNotExist as e:
-                logger.error(e)
-                exit()
-
-        for template in templates:
-
-            logger.debug(template)
-
-            local_datetime = template.location.local_datetime()
-            logger.debug(f'LDT: {local_datetime}')
-
-            start_forecast_datetime = \
-                template.location.start_forecast_datetime()
-            logger.debug(f'SFDT: {start_forecast_datetime}')
-
-            # Getting json_data from calling source scraper function
-            scraper_func = getattr(forecasts, template.forecast_source.id)
-            try:
-                scraped_forecasts = scraper_func(
-                    start_forecast_datetime, template.url)
-                template.last_scraped = local_datetime
-                template.save()
-
-            except Exception as e:
-
-                logger.error(f"{template}: {e}")
-                continue
-
-            logger.debug("Scraped forecasts: \n"+'\n'.join([
-                f'{f[0].isoformat()}, {f[1]}' for f in scraped_forecasts]))
-
-            for forecast in scraped_forecasts:
-
-                prediction_range_hours = int(
-                    (forecast[0] - local_datetime.replace(
-                        minute=0, second=0, microsecond=0))/timedelta(hours=1))
-
-                Forecast.objects.update_or_create(
-                    forecast_template=template,
-                    forecast_datetime=forecast[0],
-                    forecast_data=forecast[1],
-                    prediction_range_hours=prediction_range_hours,
-                    # defaults={'scraped_datetime': timezone.now()})
-                    defaults={'scraped_datetime': local_datetime})
-
-        # Closing Selenium driver
-        if forecasts.driver:
-            forecasts.driver.close()
-            forecasts.driver.quit()
-
-        # Checking for expired forecasts
-        # whose data is more than an hour out of date
+    def check_expiration(cls):
         exp_report = []
         for template in cls.objects.all():
-
             def exp_report_append(): exp_report.append(
                         template.forecast_source)
-
             try:
-
                 last_forecast = Forecast.objects.filter(
                     forecast_template=template).latest('scraped_datetime')
-
                 if not last_forecast.is_actual():
                     exp_report_append()
-
             except Forecast.DoesNotExist:
                 exp_report_append()
 
@@ -236,9 +214,39 @@ class ForecastTemplate(models.Model):
                 [f"{i[0]} {i[1]}/{i[2]} locs" for i in exp_report])
             exp_report = f"OUTDATED data detected:\n{exp_report}"
 
-            logger.critical(exp_report)
+            FS_LOGGER.critical(exp_report)
 
-        logger.info("END")
+    @classmethod
+    def run_scraper(cls, forecast_source_id=None):
+        if forecast_source_id:
+            try:
+                ForecastSource.objects.get(id=forecast_source_id)
+            except ForecastSource.DoesNotExist as e:
+                FS_LOGGER.error(e)
+                exit()
+
+        if not forecast_source_id:
+            templates = cls.objects.all()
+        else:
+            templates = cls.objects.filter(
+                forecast_source_id=forecast_source_id)
+
+        start_time = time()
+
+        for template in templates:
+            template.run_template_scraper()
+
+        cls.check_expiration()
+
+        FS_LOGGER.info("END")
+        end_time = time()
+        elapsed_time = end_time - start_time
+        FS_LOGGER.debug(f"Elapsed run time: {round(elapsed_time,1)} seconds")
+
+        # Closing Selenium driver
+        if forecasts.driver:
+            forecasts.driver.close()
+            forecasts.driver.quit()
 
 
 class Forecast(models.Model):

@@ -11,6 +11,8 @@ import zipfile
 from datascraper.proxy import set_proxy
 from datascraper.logging import init_logger
 
+PROXY = set_proxy()
+
 
 ######################################
 # FORECAST SOURCES SCRAPER FUNCTIONS #
@@ -221,9 +223,8 @@ def get_soup(url, archive_payload=False):
 
     headers = {'Accept': '*/*', 'User-Agent': UserAgent().random}
 
-    proxy = set_proxy()
-    if proxy:
-        proxy = f'http://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}'
+    if PROXY:
+        proxy = f'http://{PROXY[2]}:{PROXY[3]}@{PROXY[0]}:{PROXY[1]}'
         proxies = {'https': proxy}
     else:
         proxies = None
@@ -231,23 +232,18 @@ def get_soup(url, archive_payload=False):
     if not archive_payload:
         response = requests.get(
             url=url,
-            # url='https://yandex.ru/internet',
             headers=headers,
             proxies=proxies,
-            # proxies={'https': proxy},
-            # proxies=None,
             timeout=10,
-
         )
 
     else:
         headers['Referer'] = 'https://rp5.ru/'
         response = requests.post(
             url=url,
-            # cookies=cookies,
             headers=headers,
             data=archive_payload,
-            proxies={'https': proxy},
+            proxies=proxies,
             timeout=10
         )
 
@@ -302,7 +298,6 @@ def generate_forecasts(
 # SELENIUM #
 ############
 
-
 driver = None
 
 
@@ -312,16 +307,12 @@ def get_soup_selenium(url):
 
     if not driver:
         logger = init_logger('Selenium')
-        logger.info("> Driver initialization")
-
+        logger.debug("Driver initialization")
         driver = init_selenium_driver()
 
     driver.get(url=url)
     time.sleep(1)
     src = driver.page_source
-
-    # driver.close()
-    # driver.quit()
 
     return BeautifulSoup(src, "lxml")
 
@@ -350,16 +341,10 @@ def init_selenium_driver():
     # disable extensions
     # # options.add_argument('--disable-extensions')
 
-    # # proxy
-    # global proxies
-    # if not proxies:
-    #     get_proxies()
-    proxy = set_proxy()
-    if proxy:
+    if PROXY:
         proxies_extension = selenium_proxy(
-            proxy[2], proxy[3], proxy[0], proxy[1])
+            PROXY[2], PROXY[3], PROXY[0], PROXY[1])
         options.add_extension(proxies_extension)
-    # print(proxy)
 
     # Waits for page to be interactive
     options.page_load_strategy = 'eager'

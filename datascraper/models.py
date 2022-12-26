@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Count
-import sys
 from time import time
 
 ##############
@@ -169,7 +168,7 @@ class ForecastTemplate(models.Model):
 
         except Exception as e:
             FS_LOGGER.error(f"{self}: {e}")
-            sys.exit()
+            return
 
         # FS_LOGGER.debug("Scraped forecasts: \n"+'\n'.join([
         #     f'{f[0].isoformat()}, {f[1]}' for f in scraped_forecasts]))

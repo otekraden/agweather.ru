@@ -9,6 +9,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium_stealth import stealth
 import zipfile
 from datascraper.proxy import set_proxy
+from datascraper.logging import init_logger
 
 PROXY = set_proxy()
 
@@ -297,17 +298,21 @@ def generate_forecasts(
 # SELENIUM #
 ############
 
+driver = None
+
+
 def get_soup_selenium(url):
     """Scraping html content from source with the help of Selenium library"""
+    global driver
 
-    driver = init_selenium_driver()
+    if not driver:
+        logger = init_logger('Selenium')
+        logger.debug("Driver initialization")
+        driver = init_selenium_driver()
 
     driver.get(url=url)
     time.sleep(1)
     src = driver.page_source
-
-    # driver.close()
-    # driver.quit()
 
     return BeautifulSoup(src, "lxml")
 

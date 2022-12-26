@@ -11,8 +11,7 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Count
 import sys
-from time import sleep, time
-from random import random
+from time import time
 
 ##############
 # VALIDATORS #
@@ -152,7 +151,6 @@ class ForecastTemplate(models.Model):
 
     def run_template_scraper(self):
 
-        sleep(random()*2)
         FS_LOGGER.debug(f'S: {self}')
 
         local_datetime = self.location.local_datetime()
@@ -245,6 +243,11 @@ class ForecastTemplate(models.Model):
         end_time = time()
         elapsed_time = end_time - start_time
         FS_LOGGER.debug(f"Elapsed run time: {round(elapsed_time,1)} seconds")
+
+        # Closing Selenium driver
+        if forecasts.driver:
+            forecasts.driver.close()
+            forecasts.driver.quit()
 
 
 class Forecast(models.Model):

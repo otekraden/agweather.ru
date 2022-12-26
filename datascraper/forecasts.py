@@ -306,8 +306,8 @@ def get_soup_selenium(url):
     time.sleep(1)
     src = driver.page_source
 
-    # driver.close()
-    # driver.quit()
+    driver.close()
+    driver.quit()
 
     return BeautifulSoup(src, "lxml")
 

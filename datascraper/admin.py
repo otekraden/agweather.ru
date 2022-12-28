@@ -49,7 +49,7 @@ class ArchiveTemplateInline(admin.TabularInline):
     model = ArchiveTemplate
     extra = 0
 
-    fields = ("archive_source", 'source_url', 'url')
+    fields = ('archive_source', 'source_url', 'url',)
     readonly_fields = ('source_url',)
 
     def source_url(self, obj):
@@ -175,9 +175,11 @@ class ForecastInline(TabularInlinePaginated):
 @admin.register(ForecastTemplate)
 class ForecastTemplateAdmin(admin.ModelAdmin):
 
-    list_display = ('forecast_source', 'location', 'view_on_source_site')
-    readonly_fields = ('forecast_source', 'location', 'view_on_source_site')
-    fields = ('forecast_source', 'location', 'view_on_source_site')
+    list_display = (
+        'forecast_source', 'location', 'view_on_source_site', 'author')
+    readonly_fields = (
+        'forecast_source', 'location', 'view_on_source_site', 'author')
+    fields = ('forecast_source', 'location', 'view_on_source_site', 'author')
 
     list_filter = ('forecast_source', 'location')
 
@@ -189,7 +191,7 @@ class ForecastTemplateAdmin(admin.ModelAdmin):
         color = obj.forecast_source.chart_color
 
         return format_html('<a href="{}" target="_blank" \
-                           style="color: {};">{}</a>', url, color, url)
+                           style="color: {};">LINK TO SOURCE</a>', url, color)
 
     inlines = [ForecastInline, ]
 
@@ -245,9 +247,11 @@ class ArchiveInline(TabularInlinePaginated):
 @admin.register(ArchiveTemplate)
 class ArchiveTemplateAdmin(admin.ModelAdmin):
 
-    list_display = ('archive_source', 'location', 'view_on_source_site')
-    readonly_fields = ('archive_source', 'location', 'view_on_source_site')
-    fields = ('archive_source', 'location', 'view_on_source_site')
+    list_display = (
+        'archive_source', 'location', 'view_on_source_site', 'author')
+    readonly_fields = (
+        'archive_source', 'location', 'view_on_source_site', 'author')
+    fields = ('archive_source', 'location', 'view_on_source_site', 'author')
 
     list_filter = ('archive_source', 'location')
 
@@ -259,7 +263,7 @@ class ArchiveTemplateAdmin(admin.ModelAdmin):
         color = obj.archive_source.chart_color
 
         return format_html('<a href="{}" target="_blank" \
-                           style="color: {};">{}</a>', url, color, url)
+                           style="color: {};">LINK TO SOURCE</a>', url, color)
 
     inlines = [ArchiveInline, ]
 

@@ -297,6 +297,7 @@ class ArchiveSource(models.Model):
     name = models.CharField(max_length=30)
     url = models.URLField(max_length=200, unique=True)
     chart_color = models.CharField(max_length=10)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.name

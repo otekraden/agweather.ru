@@ -414,6 +414,8 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
                 form_data[key] = value
 
         template = ForecastTemplate.objects.create(**form_data)
+        template.author = self.request.user
+        template.save()
         template.run_template_scraper()
         location = template.location
 
@@ -494,10 +496,10 @@ class ArchiveTemplateWizard(LoginRequiredMixin, SessionWizardView):
                 form_data[key] = value
 
         template = ArchiveTemplate.objects.create(**form_data)
+        template.author = self.request.user
+        template.save()
         template.run_template_scraper()
         location = template.location
-        # location.is_active = True
-        # location.save()
 
         self.request.session['location_id'] = location.id
         self.request.session['location'] = str(location)

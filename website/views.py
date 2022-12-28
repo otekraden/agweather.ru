@@ -414,9 +414,8 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
                 form_data[key] = value
 
         template = ForecastTemplate.objects.create(**form_data)
+        template.run_template_scraper()
         location = template.location
-        # location.is_active = True
-        # location.save()
 
         self.request.session['location_id'] = location.id
         self.request.session['location'] = str(location)

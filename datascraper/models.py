@@ -11,6 +11,7 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Count
 from time import time
+from django.utils.decorators import method_decorator
 
 ##############
 # VALIDATORS #
@@ -111,6 +112,20 @@ class WeatherParameter(models.Model):
     def __str__(self):
         return self.var_name
 
+
+def elapsed_time_decorator(logger):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            logger.info("START")
+            start_time = time()
+            func(*args, **kwargs)
+            end_time = time()
+            elapsed_time = end_time - start_time
+            logger.info("END")
+            logger.info(f"Elapsed run time: {round(elapsed_time,1)} seconds")
+        return wrapper
+    return decorator
+
 ###################
 # FORECAST MODELS #
 ###################
@@ -188,6 +203,32 @@ class ForecastTemplate(models.Model):
 
         FS_LOGGER.debug(f'F: {self}')
 
+    @classmethod
+    @method_decorator(elapsed_time_decorator(FS_LOGGER))
+    def run_scraper(cls, forecast_source_id=None):
+        if forecast_source_id:
+            try:
+                ForecastSource.objects.get(id=forecast_source_id)
+            except ForecastSource.DoesNotExist as e:
+                FS_LOGGER.error(e)
+                exit()
+
+        if not forecast_source_id:
+            templates = cls.objects.all()
+        else:
+            templates = cls.objects.filter(
+                forecast_source_id=forecast_source_id)
+
+        for template in templates:
+            template.run_template_scraper()
+
+        cls.check_expiration()
+
+        # Closing Selenium driver
+        if forecasts.driver:
+            forecasts.driver.close()
+            forecasts.driver.quit()
+
     # Checking for expired forecasts
     # whose data is more than an hour out of date
     @classmethod
@@ -215,38 +256,6 @@ class ForecastTemplate(models.Model):
             exp_report = f"OUTDATED data detected:\n{exp_report}"
 
             FS_LOGGER.critical(exp_report)
-
-    @classmethod
-    def run_scraper(cls, forecast_source_id=None):
-        if forecast_source_id:
-            try:
-                ForecastSource.objects.get(id=forecast_source_id)
-            except ForecastSource.DoesNotExist as e:
-                FS_LOGGER.error(e)
-                exit()
-
-        if not forecast_source_id:
-            templates = cls.objects.all()
-        else:
-            templates = cls.objects.filter(
-                forecast_source_id=forecast_source_id)
-
-        start_time = time()
-
-        for template in templates:
-            template.run_template_scraper()
-
-        cls.check_expiration()
-
-        FS_LOGGER.info("END")
-        end_time = time()
-        elapsed_time = end_time - start_time
-        FS_LOGGER.debug(f"Elapsed run time: {round(elapsed_time,1)} seconds")
-
-        # Closing Selenium driver
-        if forecasts.driver:
-            forecasts.driver.close()
-            forecasts.driver.quit()
 
 
 class Forecast(models.Model):
@@ -280,6 +289,8 @@ class Forecast(models.Model):
 # ARCHIVE MODELS #
 ##################
 
+AS_LOGGER = init_logger('Archive scraper')
+
 
 class ArchiveSource(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
@@ -305,52 +316,47 @@ class ArchiveTemplate(models.Model):
     def __str__(self):
         return f"{self.archive_source} --> {self.location}"
 
-    @classmethod
-    def scrap_archives(cls):
+    def run_template_scraper(self):
 
-        logger = init_logger('Archive scraper')
-        logger.info("START")
+        AS_LOGGER.debug(f'S: {self}')
+
+        timezone_info = zoneinfo.ZoneInfo(self.location.timezone)
+        start_archive_datetime = self.location.start_archive_datetime()
+
+        try:
+            last_record_datetime = Archive.objects.filter(
+                archive_template__id=self.id).latest(
+                'record_datetime').record_datetime.replace(
+                tzinfo=timezone_info)
+        except Archive.DoesNotExist:
+            last_record_datetime = None
+
+        try:
+            archive_data = archive.arch_rp5(
+                start_archive_datetime, self.url, last_record_datetime)
+        except Exception as _ex:
+
+            AS_LOGGER.error(f"{self}: {_ex}")
+            return
+
+        for record in archive_data:
+
+            Archive.objects.get_or_create(
+                archive_template=self,
+                record_datetime=record[0],
+                data_json=record[1],
+                defaults={'scraped_datetime': timezone.now()})
+
+        AS_LOGGER.debug(f'F: {self}')
+
+    @classmethod
+    @method_decorator(elapsed_time_decorator(AS_LOGGER))
+    def run_scraper(cls):
 
         templates = cls.objects.all()
 
         for template in templates:
-            logger.debug(template)
-
-            # # Getting local datetime at archive location
-            timezone_info = zoneinfo.ZoneInfo(template.location.timezone)
-            # local_datetime = timezone.localtime(timezone=timezone_info)
-
-            # # Calculating start archive datetime
-            # start_archive_datetime = local_datetime.replace(
-            #     minute=0, second=0, microsecond=0)
-
-            start_archive_datetime = template.location.start_archive_datetime()
-
-            try:
-                last_record_datetime = Archive.objects.filter(
-                    archive_template__id=template.id).latest(
-                    'record_datetime').record_datetime.replace(
-                    tzinfo=timezone_info)
-            except Archive.DoesNotExist:
-                last_record_datetime = None
-
-            try:
-                archive_data = archive.arch_rp5(
-                    start_archive_datetime, template.url, last_record_datetime)
-            except Exception as _ex:
-
-                logger.error(f"{template}: {_ex}")
-
-                continue
-
-            for record in archive_data:
-
-                Archive.objects.get_or_create(
-                    archive_template=template,
-                    record_datetime=record[0],
-                    data_json=record[1],
-                    defaults={'scraped_datetime': timezone.now()})
-        logger.info("END")
+            template.run_template_scraper()
 
 
 class Archive(models.Model):
@@ -362,7 +368,6 @@ class Archive(models.Model):
 
     class Meta:
         ordering = ['archive_template', 'record_datetime']
-        # index_together = ['archive_template', 'record_datetime']
         indexes = [
             models.Index(fields=["archive_template", "record_datetime"]),
         ]

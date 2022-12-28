@@ -8,4 +8,4 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
 
         ForecastTemplate.run_scraper()
-        ArchiveTemplate.scrap_archives()
+        ArchiveTemplate.run_scraper()

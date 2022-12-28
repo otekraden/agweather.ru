@@ -494,6 +494,7 @@ class ArchiveTemplateWizard(LoginRequiredMixin, SessionWizardView):
                 form_data[key] = value
 
         template = ArchiveTemplate.objects.create(**form_data)
+        template.run_template_scraper()
         location = template.location
         # location.is_active = True
         # location.save()

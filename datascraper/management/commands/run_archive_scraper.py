@@ -7,4 +7,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        ArchiveTemplate.scrap_archives()
+        ArchiveTemplate.run_scraper()

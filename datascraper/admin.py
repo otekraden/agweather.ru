@@ -87,7 +87,7 @@ class LocationAdmin(admin.ModelAdmin):
 @admin.register(ForecastSource)
 class ForecastSourceAdmin(admin.ModelAdmin):
 
-    list_display = ['name', 'id', 'url', 'chart_color_']
+    list_display = ['name', 'scraper_class', 'url', 'chart_color_']
 
     def chart_color_(self, obj):
 
@@ -106,7 +106,7 @@ class ForecastSourceAdmin(admin.ModelAdmin):
 @admin.register(ArchiveSource)
 class ArchiveSourceAdmin(admin.ModelAdmin):
 
-    list_display = ['name', 'id', 'url', 'chart_color_']
+    list_display = ['name', 'scraper_class', 'url', 'chart_color_']
 
     def chart_color_(self, obj):
 

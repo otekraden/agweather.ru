@@ -135,7 +135,7 @@ FS_LOGGER = init_logger('Forecast scraper')
 
 
 class ForecastSource(models.Model):
-    id = models.CharField(max_length=20, primary_key=True)
+    scraper_class = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=30)
     url = models.URLField(max_length=200, unique=True)
     chart_color = models.CharField(max_length=10)
@@ -174,7 +174,7 @@ class ForecastTemplate(models.Model):
             self.location.start_forecast_datetime()
         # FS_LOGGER.debug(f'SFDT: {start_forecast_datetime}')
 
-        scraper_func = getattr(forecasts, self.forecast_source.id)
+        scraper_func = getattr(forecasts, self.forecast_source.scraper_class)
 
         try:
             scraped_forecasts = scraper_func(start_forecast_datetime, self.url)
@@ -205,19 +205,20 @@ class ForecastTemplate(models.Model):
 
     @classmethod
     @method_decorator(elapsed_time_decorator(FS_LOGGER))
-    def run_scraper(cls, forecast_source_id=None):
-        if forecast_source_id:
+    def run_scraper(cls, scraper_class=None):
+        if scraper_class:
             try:
-                ForecastSource.objects.get(id=forecast_source_id)
+                ForecastSource.objects.get(
+                    scraper_class=scraper_class)
             except ForecastSource.DoesNotExist as e:
                 FS_LOGGER.error(e)
                 exit()
 
-        if not forecast_source_id:
+        if not scraper_class:
             templates = cls.objects.all()
         else:
             templates = cls.objects.filter(
-                forecast_source_id=forecast_source_id)
+                scraper_class=scraper_class)
 
         for template in templates:
             template.run_template_scraper()
@@ -293,7 +294,7 @@ AS_LOGGER = init_logger('Archive scraper')
 
 
 class ArchiveSource(models.Model):
-    id = models.CharField(max_length=20, primary_key=True)
+    scraper_class = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=30)
     url = models.URLField(max_length=200, unique=True)
     chart_color = models.CharField(max_length=10)

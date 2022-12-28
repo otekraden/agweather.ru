@@ -7,10 +7,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'forecast_source_id', type=str, nargs='?', default=None)
+            'scraper_class', type=str, nargs='?', default=None)
 
     def handle(self, *args, **kwargs):
 
-        forecast_source_id = kwargs['forecast_source_id']
+        scraper_class = kwargs['scraper_class']
 
-        ForecastTemplate.run_scraper(forecast_source_id)
+        ForecastTemplate.run_scraper(scraper_class)

@@ -382,7 +382,7 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
                     forecast_source=forecast_source)[0].url})
 
         elif self.steps.current == 'f3':
-            scraper_func = getattr(forecasts, forecast_source.id)
+            scraper_func = getattr(forecasts, forecast_source.scraper_class)
             url = self.get_cleaned_data_for_step('f2').get('url')
             location = self.get_cleaned_data_for_step('f1').get('location')
             start_forecast_datetime = location.start_forecast_datetime()
@@ -525,7 +525,7 @@ class ArchiveTemplateWizard(LoginRequiredMixin, SessionWizardView):
                     pk=self.request.session.get('location_id'))
                 initial.update({'location': location})
 
-                archive_source = ArchiveSource.objects.get(id='rp5')
+                archive_source = ArchiveSource.objects.get(scraper_class='rp5')
                 initial.update({'archive_source': archive_source})
             # except (Location.DoesNotExist, ArchiveSource.DoesNotExist):
             except ObjectDoesNotExist:

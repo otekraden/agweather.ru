@@ -20,198 +20,210 @@ PROXY = set_proxy()
 # !To provide a call function from Forecast template class method
 # "scrap_forecasts" their names must be the same as in Database:
 # table "datascraper_forecastsource", col:"id"
-def rp5(start_forecast_datetime, url):
 
-    # Scraping html content from source
-    soup = get_soup(url)
-    ftab = soup.find(id='ftab_content')
+class BaseForecastScraper():
+    def __init__(self, *args, **kwargs):
+        self.start_forecast_datetime = kwargs["start_forecast_datetime"]
+        self.start_date_from_source = None
+        self.time_row = []
+        self.temp_row = []
+        self.press_row = []
+        self.wind_vel_row = []
 
-    # Parsing start date from source html page
-    start_date_from_source = ftab.find(
-        'span', class_="weekDay").get_text().split(',')[-1].split()
-    start_date_from_source = func_start_date_from_source(
-        month=month_name_to_number(start_date_from_source[1][:3]),
-        day=int(start_date_from_source[0]),
-        req_start_datetime=start_forecast_datetime
-    )
+    def get_forecasts(self):
 
-    # Parsing time row from source
-    time_row = ftab.find('tr', class_="forecastTime").find_all('td')[1:-1]
-    time_row = [int(t.get_text()) for t in time_row]
+        forecast_data = list(
+            zip(self.temp_row, self.press_row, self.wind_vel_row))
 
-    # Parsing weather parameters rows from source:
-    # Temperature
-    temp_row = ftab.find('a', class_='t_temperature')
-    temp_row = temp_row.parent.parent.find_all('td')[1:-1]
-    temp_row = [int(t.find('div', class_='t_0').get_text()) for t in temp_row]
-    # Pressure
-    press_row = ftab.find('a', class_='t_pressure')
-    press_row = press_row.parent.parent.find_all('td')[1:-1]
-    press_row = [
-        int(t.find('div', class_='p_0').get_text()) for t in press_row]
-    # Wind velocity
-    wind_vel_row = ftab.find('a', class_='t_wind_velocity')
-    wind_vel_row = wind_vel_row.parent.parent.find_all('td')[1:-1]
-    wind_vel_row = [w.find('div', class_='wv_0') for w in wind_vel_row]
-    wind_vel_row = [int(w.get_text()) if w else 0 for w in wind_vel_row]
+        forecasts, prev_hour = [], None
+        for hour in self.time_row:
+            if prev_hour and prev_hour > hour:
+                self.start_date_from_source += timedelta(days=1)
+            datetime_ = self.start_date_from_source + timedelta(hours=hour)
+            prev_hour = hour
+            forecast_record = forecast_data.pop(0)
+            if datetime_ >= self.start_forecast_datetime:
+                forecasts.append((datetime_, forecast_record))
 
-    return generate_forecasts(
-        start_forecast_datetime,
-        start_date_from_source,
-        time_row,
-        list(zip(temp_row, press_row, wind_vel_row)))
+        return forecasts
 
 
-def yandex(start_forecast_datetime, url):
+class rp5(BaseForecastScraper):
+    def __init__(self, url, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Scraping html content from source
+        soup = get_soup(url)
+        ftab = soup.find(id='ftab_content')
 
-    # Scraping html content from source
-    def get_ftab():
-        soup = get_soup_selenium(url)
-        return soup.find('main').find_all('div', recursive=False)[1]
+        # Parsing start date from source html page
+        start_date_from_source = ftab.find(
+            'span', class_="weekDay").get_text().split(',')[-1].split()
+        self.start_date_from_source = func_start_date_from_source(
+            month=month_name_to_number(start_date_from_source[1][:3]),
+            day=int(start_date_from_source[0]),
+            req_start_datetime=self.start_forecast_datetime
+        )
 
-    try:
-        ftab = get_ftab()
-    except AttributeError:
-        ftab = get_ftab()
-
-    ftab = ftab.find_all('article', recursive=False)
-
-    # Parsing start date from source html page
-    date_tags = ftab[0].find('p').find_all('span')
-
-    start_date_from_source = func_start_date_from_source(
-        month=month_name_to_number(date_tags[2].get_text()),
-        day=int(date_tags[0].get_text()),
-        req_start_datetime=start_forecast_datetime
-    )
-
-    ftab = [day.find_all('div', recursive=False)[:6*4] for day in ftab]
-    ftab = sum(ftab, [])
-
-    # Parsing weather parameters rows from source:
-    # Temperature
-    temp_row = [t.div.next_sibling for t in ftab[::6]]
-    # Conversion of the temperature of the form "+6...+8"
-    # to the average value
-    temp_row = [t.replace(chr(8722), '-').replace('°', '').split('...')
-                for t in temp_row]
-    temp_row = [[int(i) for i in t] for t in temp_row]
-    temp_row = [sum(t)/len(t) for t in temp_row]
-
-    # Pressure
-    press_row = [int(p.get_text()) for p in ftab[2::6]]
-
-    # Wind velocity
-    wind_vel_row = [w.contents[0].replace(',', '.') for w in ftab[4::6]]
-    wind_vel_row = [float(w) for w in wind_vel_row]
-
-    # Parsing time row from source
-    time_row = [9, 15, 21, 3]*(len(temp_row)//4)
-
-    return generate_forecasts(
-        start_forecast_datetime,
-        start_date_from_source,
-        time_row,
-        list(zip(temp_row, press_row, wind_vel_row)))
-
-
-def meteoinfo(start_forecast_datetime, url):
-
-    # Scraping html content from source
-    soup = get_soup(url)
-    ftab = soup.find('div', class_='hidden-desktop')
-
-    # Parsing start date from source html page
-    start_date_from_source = ftab.find('nobr')
-    start_hour = start_date_from_source.parent.next_sibling.get_text()
-    start_hour = 15 if start_hour.strip().lower() == 'день' else 3
-    start_date_from_source = start_date_from_source.get_text()
-    start_date_from_source = func_start_date_from_source(
-        month=month_name_to_number(start_date_from_source),
-        day=int(re.findall(r'\d+', start_date_from_source)[0]),
-        req_start_datetime=start_forecast_datetime
-    )
-
-    # Parsing weather parameters rows from source:
-    # Temperature
-    temp_row = ftab.find_all('span', class_='fc_temp_short')
-    temp_row = [int(t.get_text().rstrip('°')) for t in temp_row]
-    # Wind velocity
-    wind_vel_row = ftab.find_all('i')
-    press_row = wind_vel_row[:]
-    wind_vel_row = [int(w.parent.get_text()) for w in wind_vel_row]
-    # Pressure
-    press_row = [int(p.parent.next_sibling.get_text()) for p in press_row]
-
-    # Parsing time row from source
-    time, time_row = start_hour, []
-    for t in temp_row:
-        time_row.append(time)
-        time = 15 if time == 3 else 3
-
-    return generate_forecasts(
-        start_forecast_datetime,
-        start_date_from_source,
-        time_row,
-        list(zip(temp_row, press_row, wind_vel_row)))
-
-
-def foreca(start_forecast_datetime, url: str):
-
-    # Scraping html content from source first day page
-    soup = get_soup(url)
-
-    # print(soup)
-    ftab = soup.find('div', class_='page-content')
-
-    # Parsing start date from source html page
-    start_date_from_source = ftab.find('div', class_='date').get_text().split()
-    start_date_from_source = func_start_date_from_source(
-        month=month_name_to_number(start_date_from_source[1][:3]),
-        day=int(start_date_from_source[0]),
-        req_start_datetime=start_forecast_datetime
-    )
-
-    # Parsing next days urls from source first day page
-    domain = url[:url.find('/', 8)]
-    next_days_urls = ftab.find('ul', class_='days').find_all('a')[1:]
-    next_days_urls = [domain + nd.get('href') for nd in next_days_urls]
-    # print(next_days_urls)
-
-    # Scraping tables data to array
-    ftabs = [ftab] + [get_soup(ndu).find('div', class_='page-content') for
-                      ndu in next_days_urls]
-
-    forecasts_data = [[] for i in range(4)]
-    # Parsing from saved tables
-    for ftab in ftabs:
         # Parsing time row from source
-        ftab = ftab.find('div', class_='hourContainer')
-        time_row = ftab.find_all('span', class_='time_24h')
-        time_row = [int(t.get_text()) for t in time_row]
-        forecasts_data[0].extend(time_row)
+        time_row = ftab.find('tr', class_="forecastTime").find_all('td')[1:-1]
+        self.time_row = [int(t.get_text()) for t in time_row]
 
-        # Parsing weather parameters rows from source pages:
+        # Parsing weather parameters rows from source:
         # Temperature
-        temp_row = ftab.find_all('span', class_='t')
-        temp_row = [int(t.find('span', class_='temp_c').
-                        get_text()) for t in temp_row]
-        forecasts_data[1].extend(temp_row)
+        temp_row = ftab.find('a', class_='t_temperature')
+        temp_row = temp_row.parent.parent.find_all('td')[1:-1]
+        self.temp_row = [
+            int(t.find('div', class_='t_0').get_text()) for t in temp_row]
         # Pressure
-        press_row = ftab.find_all('span', class_='value pres pres_mmhg')
-        press_row = [float(p.get_text()) for p in press_row]
-        forecasts_data[2].extend(press_row)
+        press_row = ftab.find('a', class_='t_pressure')
+        press_row = press_row.parent.parent.find_all('td')[1:-1]
+        self.press_row = [
+            int(t.find('div', class_='p_0').get_text()) for t in press_row]
         # Wind velocity
-        wind_vel_row = ftab.find_all('span', class_='windSpeed')
-        wind_vel_row = [int(w.find('span', class_='value wind wind_ms').
-                            get_text().split()[0]) for w in wind_vel_row]
-        forecasts_data[3].extend(wind_vel_row)
+        wind_vel_row = ftab.find('a', class_='t_wind_velocity')
+        wind_vel_row = wind_vel_row.parent.parent.find_all('td')[1:-1]
+        wind_vel_row = [w.find('div', class_='wv_0') for w in wind_vel_row]
+        self.wind_vel_row = [
+            int(w.get_text()) if w else 0 for w in wind_vel_row]
 
-    return generate_forecasts(
-        start_forecast_datetime,
-        start_date_from_source,
-        forecasts_data[0],
-        list(zip(*forecasts_data[1:])))
+
+class yandex(BaseForecastScraper):
+    def __init__(self, url, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Scraping html content from source
+        def get_ftab():
+            soup = get_soup_selenium(url)
+            return soup.find('main').find_all('div', recursive=False)[1]
+
+        try:
+            ftab = get_ftab()
+        except AttributeError:
+            ftab = get_ftab()
+
+        ftab = ftab.find_all('article', recursive=False)
+
+        # Parsing start date from source html page
+        date_tags = ftab[0].find('p').find_all('span')
+
+        self.start_date_from_source = func_start_date_from_source(
+            month=month_name_to_number(date_tags[2].get_text()),
+            day=int(date_tags[0].get_text()),
+            req_start_datetime=self.start_forecast_datetime
+        )
+
+        ftab = [day.find_all('div', recursive=False)[:6*4] for day in ftab]
+        ftab = sum(ftab, [])
+
+        # Parsing weather parameters rows from source:
+        # Temperature
+        temp_row = [t.div.next_sibling for t in ftab[::6]]
+        # Conversion of the temperature of the form "+6...+8"
+        # to the average value
+        temp_row = [t.replace(chr(8722), '-').replace('°', '').split('...')
+                    for t in temp_row]
+        temp_row = [[int(i) for i in t] for t in temp_row]
+        self.temp_row = [sum(t)/len(t) for t in temp_row]
+
+        # Pressure
+        self.press_row = [int(p.get_text()) for p in ftab[2::6]]
+
+        # Wind velocity
+        wind_vel_row = [w.contents[0].replace(',', '.') for w in ftab[4::6]]
+        self.wind_vel_row = [float(w) for w in wind_vel_row]
+
+        # Parsing time row from source
+        self.time_row = [9, 15, 21, 3]*(len(temp_row)//4)
+
+
+class meteoinfo(BaseForecastScraper):
+    def __init__(self, url, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Scraping html content from source
+        soup = get_soup(url)
+        ftab = soup.find('div', class_='hidden-desktop')
+
+        # Parsing start date from source html page
+        start_date_from_source = ftab.find('nobr')
+        start_hour = start_date_from_source.parent.next_sibling.get_text()
+        start_hour = 15 if start_hour.strip().lower() == 'день' else 3
+        start_date_from_source = start_date_from_source.get_text()
+        self.start_date_from_source = func_start_date_from_source(
+            month=month_name_to_number(start_date_from_source),
+            day=int(re.findall(r'\d+', start_date_from_source)[0]),
+            req_start_datetime=self.start_forecast_datetime
+        )
+
+        # Parsing weather parameters rows from source:
+        # Temperature
+        temp_row = ftab.find_all('span', class_='fc_temp_short')
+        self.temp_row = [int(t.get_text().rstrip('°')) for t in temp_row]
+        # Wind velocity
+        wind_vel_row = ftab.find_all('i')
+        press_row = wind_vel_row[:]
+        self.wind_vel_row = [int(w.parent.get_text()) for w in wind_vel_row]
+        # Pressure
+        self.press_row = [
+            int(p.parent.next_sibling.get_text()) for p in press_row]
+
+        # Parsing time row from source
+        time, self.time_row = start_hour, []
+        for t in temp_row:
+            self.time_row.append(time)
+            time = 15 if time == 3 else 3
+
+
+class foreca(BaseForecastScraper):
+    def __init__(self, url, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Scraping html content from source first day page
+        soup = get_soup(url)
+
+        ftab = soup.find('div', class_='page-content')
+
+        # Parsing start date from source html page
+        start_date_from_source = ftab.find(
+            'div', class_='date').get_text().split()
+        self.start_date_from_source = func_start_date_from_source(
+            month=month_name_to_number(start_date_from_source[1][:3]),
+            day=int(start_date_from_source[0]),
+            req_start_datetime=self.start_forecast_datetime
+        )
+
+        # Parsing next days urls from source first day page
+        domain = url[:url.find('/', 8)]
+        next_days_urls = ftab.find('ul', class_='days').find_all('a')[1:]
+        next_days_urls = [domain + nd.get('href') for nd in next_days_urls]
+
+        # Scraping tables data to array
+        ftabs = [ftab] + [get_soup(ndu).find(
+            'div', class_='page-content') for ndu in next_days_urls]
+
+        # Parsing from saved tables
+        for ftab in ftabs:
+            # Parsing time row from source
+            ftab = ftab.find('div', class_='hourContainer')
+            time_row = ftab.find_all('span', class_='time_24h')
+            time_row = [int(t.get_text()) for t in time_row]
+            self.time_row.extend(time_row)
+
+            # Parsing weather parameters rows from source pages:
+            # Temperature
+            temp_row = ftab.find_all('span', class_='t')
+            temp_row = [int(t.find('span', class_='temp_c').
+                            get_text()) for t in temp_row]
+            self.temp_row.extend(temp_row)
+            # Pressure
+            press_row = ftab.find_all('span', class_='value pres pres_mmhg')
+            press_row = [float(p.get_text()) for p in press_row]
+            self.press_row.extend(press_row)
+            # Wind velocity
+            wind_vel_row = ftab.find_all('span', class_='windSpeed')
+            wind_vel_row = [int(w.find('span', class_='value wind wind_ms').
+                                get_text().split()[0]) for w in wind_vel_row]
+            self.wind_vel_row.extend(wind_vel_row)
 
 
 ########

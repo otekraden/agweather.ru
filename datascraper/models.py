@@ -174,10 +174,12 @@ class ForecastTemplate(models.Model):
             self.location.start_forecast_datetime()
         # FS_LOGGER.debug(f'SFDT: {start_forecast_datetime}')
 
-        scraper_func = getattr(forecasts, self.forecast_source.scraper_class)
+        scraper_class = getattr(forecasts, self.forecast_source.scraper_class)
 
         try:
-            scraped_forecasts = scraper_func(start_forecast_datetime, self.url)
+            scraper_obj = scraper_class(
+                self.url, start_forecast_datetime=start_forecast_datetime)
+            scraped_forecasts = scraper_obj.get_forecasts()
             self.last_scraped = local_datetime
             self.save()
 
@@ -218,7 +220,7 @@ class ForecastTemplate(models.Model):
             templates = cls.objects.all()
         else:
             templates = cls.objects.filter(
-                scraper_class=scraper_class)
+                forecast_source__scraper_class=scraper_class)
 
         for template in templates:
             template.run_template_scraper()

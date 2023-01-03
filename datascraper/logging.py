@@ -4,6 +4,8 @@ import tg_logger
 from dotenv import load_dotenv
 import os
 from pathlib import Path
+import pwd
+import grp
 
 
 def init_logger(name):
@@ -18,7 +20,12 @@ def init_logger(name):
     stream_handler.setFormatter(formatter)
 
     BASE_DIR = Path(__file__).resolve().parent.parent
-    file_handler = logging.FileHandler(BASE_DIR / "datascraper.log")
+
+    path = BASE_DIR / "datascraper.log"
+    file_handler = logging.FileHandler(path)
+    uid = pwd.getpwnam("django").pw_uid
+    gid = grp.getgrnam("django").gr_gid
+    os.chown(path, uid, gid)
     logger.addHandler(file_handler)
     file_handler.setFormatter(formatter)
     file_handler.setLevel(logging.INFO)
@@ -28,7 +35,7 @@ def init_logger(name):
     token = os.environ["TELEGRAM_TOKEN"]
     users = os.environ["TELEGRAM_USERS"].split('\n')
     telegram_handler = tg_logger.setup(logger, token=token, users=users)
-    # telegram_handler.setLevel(logging.CRITICAL)
-    telegram_handler.setLevel(logging.INFO)
+    telegram_handler.setLevel(logging.CRITICAL)
+    # telegram_handler.setLevel(logging.INFO)
 
     return logger

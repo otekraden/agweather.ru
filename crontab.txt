@@ -1,6 +1,5 @@
+# EVERY 15 MINUTES RUN FORECAST & ARCHIVE SCRAPERS
+*/15 * * * * dpath="/home/django/django_venv/src" && $dpath/../bin/python $dpath/manage.py run_datascraper
 
-# EVERY 10 MINUTES RUN FORECAST & ARCHIVE SCRAPERS
-*/10 * * * * dpath="/home/anton/agweather_venv/agweather.online" && $dpath/../bin/python $dpath/manage.py run_forecast_scraper all && $dpath/../bin/python $dpath/manage.py run_archive_scraper
-
-# EVERY HOUR SEND DUMP DB TO YANDEX DISK & TELEGRAM
-0 * * * * dpath="/home/anton/agweather_venv/agweather.online" && $dpath/../bin/python $dpath/manage.py dump_db_to_clouds
+# EVERY 12 HOUR SEND DUMP DB TO YANDEX DISK & TELEGRAM
+0 */12 * * * dpath="/home/django/django_venv/src" && $dpath/../bin/python $dpath/manage.py dump_db_to_clouds

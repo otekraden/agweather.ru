@@ -23,6 +23,7 @@ PROXY = set_proxy()
 
 class BaseForecastScraper():
     def __init__(self, *args, **kwargs):
+        self.local_datetime = kwargs["local_datetime"]
         self.start_forecast_datetime = kwargs["start_forecast_datetime"]
         self.start_date_from_source = None
         self.time_row = []
@@ -47,6 +48,14 @@ class BaseForecastScraper():
 
         return forecasts
 
+    def get_start_date_from_source(self, month, day):
+        """Calculate the starting date of the forecast source."""
+        year = self.local_datetime.year
+        # Processing the transition through the new year
+        if self.local_datetime.month == 12 and month == 1:
+            year += 1
+        return datetime(year, month, day, tzinfo=self.local_datetime.tzinfo)
+
 
 class rp5(BaseForecastScraper):
     def __init__(self, url, *args, **kwargs):
@@ -58,10 +67,9 @@ class rp5(BaseForecastScraper):
         # Parsing start date from source html page
         start_date_from_source = ftab.find(
             'span', class_="weekDay").get_text().split(',')[-1].split()
-        self.start_date_from_source = func_start_date_from_source(
+        self.start_date_from_source = self.get_start_date_from_source(
             month=month_name_to_number(start_date_from_source[1][:3]),
-            day=int(start_date_from_source[0]),
-            req_start_datetime=self.start_forecast_datetime
+            day=int(start_date_from_source[0])
         )
 
         # Parsing time row from source
@@ -106,10 +114,9 @@ class yandex(BaseForecastScraper):
         # Parsing start date from source html page
         date_tags = ftab[0].find('p').find_all('span')
 
-        self.start_date_from_source = func_start_date_from_source(
+        self.start_date_from_source = self.get_start_date_from_source(
             month=month_name_to_number(date_tags[2].get_text()),
-            day=int(date_tags[0].get_text()),
-            req_start_datetime=self.start_forecast_datetime
+            day=int(date_tags[0].get_text())
         )
 
         ftab = [day.find_all('div', recursive=False)[:6*4] for day in ftab]
@@ -149,10 +156,9 @@ class meteoinfo(BaseForecastScraper):
         start_hour = start_date_from_source.parent.next_sibling.get_text()
         start_hour = 15 if start_hour.strip().lower() == 'день' else 3
         start_date_from_source = start_date_from_source.get_text()
-        self.start_date_from_source = func_start_date_from_source(
+        self.start_date_from_source = self.get_start_date_from_source(
             month=month_name_to_number(start_date_from_source),
-            day=int(re.findall(r'\d+', start_date_from_source)[0]),
-            req_start_datetime=self.start_forecast_datetime
+            day=int(re.findall(r'\d+', start_date_from_source)[0])
         )
 
         # Parsing weather parameters rows from source:
@@ -186,10 +192,9 @@ class foreca(BaseForecastScraper):
         # Parsing start date from source html page
         start_date_from_source = ftab.find(
             'div', class_='date').get_text().split()
-        self.start_date_from_source = func_start_date_from_source(
+        self.start_date_from_source = self.get_start_date_from_source(
             month=month_name_to_number(start_date_from_source[1][:3]),
-            day=int(start_date_from_source[0]),
-            req_start_datetime=self.start_forecast_datetime
+            day=int(start_date_from_source[0])
         )
 
         # Parsing next days urls from source first day page
@@ -261,16 +266,6 @@ def get_soup(url, archive_payload=False):
 
     src = response.text
     return BeautifulSoup(src, "lxml")
-
-
-def func_start_date_from_source(month, day, req_start_datetime):
-    """Calculate the starting date of the forecast source."""
-    year = req_start_datetime.year
-    # Processing the transition through the new year
-    if req_start_datetime.month == 12 and month == 1:
-        year += 1
-
-    return datetime(year, month, day, tzinfo=req_start_datetime.tzinfo)
 
 
 def month_name_to_number(name):

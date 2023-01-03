@@ -178,7 +178,9 @@ class ForecastTemplate(models.Model):
 
         try:
             scraper_obj = scraper_class(
-                self.url, start_forecast_datetime=start_forecast_datetime)
+                self.url,
+                local_datetime=local_datetime,
+                start_forecast_datetime=start_forecast_datetime)
             scraped_forecasts = scraper_obj.get_forecasts()
             self.last_scraped = local_datetime
             self.save()

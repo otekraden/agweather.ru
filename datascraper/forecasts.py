@@ -100,14 +100,17 @@ class yandex(BaseForecastScraper):
         super().__init__(*args, **kwargs)
 
         # Scraping html content from source
-        def get_ftab():
-            soup = get_soup_selenium(url)
-            return soup.find('main').find_all('div', recursive=False)[1]
-
-        try:
-            ftab = get_ftab()
-        except AttributeError:
-            ftab = get_ftab()
+        attempt = 0
+        while attempt < 3:
+            try:
+                soup = get_soup_selenium(url)
+                ftab = soup.find('main').find_all('div', recursive=False)[1]
+            except AttributeError as e:
+                print(e)
+                time.sleep(1)
+                attempt += 1
+                continue
+            break
 
         ftab = ftab.find_all('article', recursive=False)
 
@@ -280,25 +283,6 @@ def month_name_to_number(name):
                    'jan', 'feb', 'mar', 'apr', 'may', 'jun',  # ENG
                    'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
     return month_tuple.index(name) % 12 + 1
-
-
-def generate_forecasts(
-        start_forecast_datetime,
-        start_date_from_source,
-        time_row,
-        forecast_data):
-
-    forecasts, prev_hour = [], None
-    for hour in time_row:
-        if prev_hour and prev_hour > hour:
-            start_date_from_source += timedelta(days=1)
-        datetime_ = start_date_from_source + timedelta(hours=hour)
-        prev_hour = hour
-        forecast_record = forecast_data.pop(0)
-        if datetime_ >= start_forecast_datetime:
-            forecasts.append((datetime_, forecast_record))
-
-    return forecasts
 
 
 ############

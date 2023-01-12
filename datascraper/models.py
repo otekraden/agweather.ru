@@ -39,24 +39,15 @@ class TimeZone(models.Model):
 
     @classmethod
     def scrap_zones(cls):
-        logger = init_logger('TimeZone scraper')
-
-        try:
-            tzones = get_soup(
-                'https://en.wikipedia.org/wiki/List_of_tz_database_time_zones')
-            tzones = tzones.tbody.find_all('tr')[2:]
-            tzones = (tz.td.find_next_sibling().get_text().strip() for tz in
-                      tzones)
-
-        except Exception as e:
-            logger.critical(f'FAILED to scrap TimeZones: {e}')
-            exit()
-
+        tzones = get_soup(
+            'https://en.wikipedia.org/wiki/List_of_tz_database_time_zones')
+        tzones = tzones.tbody.find_all('tr')[2:]
+        tzones = [tz.td.find_next_sibling().get_text().strip() for tz in 
+                  tzones]
         cls.objects.all().delete()
         for tz in tzones:
             cls.objects.create(name=tz)
-
-        logger.debug('Timezones successfully scraped from Wikipedia.')
+        return tzones
 
     @classmethod
     def zones_list(cls):
@@ -118,13 +109,15 @@ def elapsed_time_decorator(logger):
         def wrapper(*args, **kwargs):
             logger.info("START")
             start_time = time()
-            func(*args, **kwargs)
+            result = func(*args, **kwargs)
             end_time = time()
             elapsed_time = end_time - start_time
             logger.info("END")
             logger.info(f"Elapsed run time: {round(elapsed_time,1)} seconds")
+            return result
         return wrapper
     return decorator
+
 
 ###################
 # FORECAST MODELS #
@@ -206,6 +199,7 @@ class ForecastTemplate(models.Model):
                 defaults={'scraped_datetime': local_datetime})
 
         FS_LOGGER.debug(f'F: {self}')
+        return True
 
     @classmethod
     @method_decorator(elapsed_time_decorator(FS_LOGGER))
@@ -216,7 +210,7 @@ class ForecastTemplate(models.Model):
                     scraper_class=scraper_class)
             except ForecastSource.DoesNotExist as e:
                 FS_LOGGER.error(e)
-                exit()
+                return
 
         if not scraper_class:
             templates = cls.objects.all()
@@ -233,7 +227,7 @@ class ForecastTemplate(models.Model):
         if forecasts.driver:
             forecasts.driver.close()
             forecasts.driver.quit()
-
+        return True
     # Checking for expired forecasts
     # whose data is more than an hour out of date
     @classmethod
@@ -262,6 +256,8 @@ class ForecastTemplate(models.Model):
 
             FS_LOGGER.critical(exp_report)
 
+            return True
+
 
 class Forecast(models.Model):
     forecast_template = models.ForeignKey(
@@ -286,8 +282,7 @@ class Forecast(models.Model):
         return datetime.now() < exp_datetime
 
     def __str__(self):
-        return f"{self.forecast_template.forecast_source} --> \
-            {self.forecast_template.location}"
+        return f"{self.forecast_template.forecast_source} --> {self.forecast_template.location}"
 
 
 ##################
@@ -363,6 +358,7 @@ class ArchiveTemplate(models.Model):
 
         for template in templates:
             template.run_template_scraper()
+        return True
 
 
 class Archive(models.Model):

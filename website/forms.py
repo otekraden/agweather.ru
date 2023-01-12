@@ -41,13 +41,7 @@ class ForecastTemplate2(forms.ModelForm):
 
         if cleaned_data is not None:
             url = cleaned_data.get("url")
-            # try:
-            #     validate_url = URLValidator()
-            #     validate_url(url)
-            # except ValidationError:
-            #     self.add_error(
-            #         'url', ValidationError("This input is not Url."), )
-            # else:
+
             if not url.startswith(self.forecast_source.url):
                 self.add_error('url', ValidationError(
                     "This URL doesn’t belong to the Domain of the Forecast \

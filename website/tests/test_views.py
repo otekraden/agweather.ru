@@ -123,3 +123,12 @@ class MiscTest(WebsiteTestBase):
         self.assertEqual(check_int_input('', 3, 7, 6), 6)
         self.assertEqual(check_int_input('1', 3, 7, 9), 3)
         self.assertEqual(check_int_input('5', 3, 7, 9), 5)
+
+
+class LocationCreateViewTest(WebsiteTestBase):
+
+    def test_redirect_if_not_logged_in(self):
+
+        response = self.client.get(reverse('website:add_location'))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/accounts/login/'))

@@ -146,7 +146,8 @@ class ForecastTemplate(models.Model):
         ForecastSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     url = models.URLField(max_length=500, unique=True)
-    last_scraped = models.DateTimeField(default=datetime.fromtimestamp(0))
+    last_scraped = models.DateTimeField(
+        default=datetime.fromtimestamp(0, tz=zoneinfo.ZoneInfo('UTC')))
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:

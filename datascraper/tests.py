@@ -63,8 +63,8 @@ class LocationTestCase(DatascraperTestBase):
     def test_locations_list(self):
         locations_list = Location.locations_list()
         self.assertEqual(
-            locations_list[8], 'Moscow, Moscow, Russia')
-        self.assertEqual(len(locations_list), 13)
+            locations_list[0], 'Moscow, Moscow, Russia')
+        self.assertEqual(len(locations_list), 2)
 
 
 class WeatherParameterTestCase(DatascraperTestBase):
@@ -96,8 +96,10 @@ class ForecastTemplateTestCase(DatascraperTestBase):
         self.assertTrue(ForecastTemplate.run_scraper())
         self.assertIsNone(ForecastTemplate.check_expiration())
 
-        forecast = Forecast.objects.all()[17]
-        self.assertEqual(str(forecast), 'Foreca.ru --> Saint-Petersburg, Saint-Petersburg, Russia')
+        forecast = Forecast.objects.filter(
+            forecast_template__id=7).latest('scraped_datetime')
+        self.assertEqual(
+            str(forecast), 'Meteoinfo.ru --> Moscow, Moscow, Russia')
         self.assertTrue(forecast.is_actual())
         forecast.scraped_datetime = \
             forecast.forecast_template.location.local_datetime() - timedelta(

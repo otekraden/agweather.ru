@@ -130,4 +130,3 @@ website/static/website/js/*
 
 static/*
 media/
-database_for_tests.sqlite3

@@ -8,7 +8,7 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 from user_profile.models import Profile
 from forum.models import Topic
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic import CreateView
 from formtools.wizard.views import SessionWizardView
 from website import forms
@@ -340,7 +340,9 @@ def get_profile(request):
 # CONTRIBUTION #
 ################
 
-class LocationCreateView(LoginRequiredMixin, CreateView):
+class LocationCreateView(PermissionRequiredMixin, CreateView):
+    permission_required = "datascraper.add_location"
+
     model = Location
     fields = ['name', 'region', 'country', 'timezone']
     template_name = 'website/location_form.html'
@@ -366,7 +368,8 @@ FORECAST_TEMPLATES = {"f1": "website/template_wizard/f1.html",
                       "f3": "website/template_wizard/f3.html", }
 
 
-class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
+class ForecastTemplateWizard(PermissionRequiredMixin, SessionWizardView):
+    permission_required = "datascraper.add_forecasttemplate"
     form_list = FORECAST_FORMS
 
     def get_context_data(self, form, **kwargs):
@@ -382,12 +385,17 @@ class ForecastTemplateWizard(LoginRequiredMixin, SessionWizardView):
                     forecast_source=forecast_source)[0].url})
 
         elif self.steps.current == 'f3':
-            scraper_func = getattr(forecasts, forecast_source.scraper_class)
+            scraper_class = getattr(forecasts, forecast_source.scraper_class)
             url = self.get_cleaned_data_for_step('f2').get('url')
             location = self.get_cleaned_data_for_step('f1').get('location')
+            local_datetime = location.local_datetime()
             start_forecast_datetime = location.start_forecast_datetime()
             try:
-                scraped_forecasts = scraper_func(start_forecast_datetime, url)
+                scraper_obj = scraper_class(
+                    url,
+                    local_datetime=local_datetime,
+                    start_forecast_datetime=start_forecast_datetime)
+                scraped_forecasts = scraper_obj.get_forecasts()
                 scraped_forecasts = (
                     scraped_forecasts[0], scraped_forecasts[-1])
                 scraped_forecasts = [
@@ -458,7 +466,8 @@ ARCHIVE_TEMPLATES = {"a1": "website/template_wizard/a1.html",
                      }
 
 
-class ArchiveTemplateWizard(LoginRequiredMixin, SessionWizardView):
+class ArchiveTemplateWizard(PermissionRequiredMixin, SessionWizardView):
+    permission_required = "datascraper.add_archivetemplate"
     form_list = ARCHIVE_FORMS
 
     def get_context_data(self, form, **kwargs):

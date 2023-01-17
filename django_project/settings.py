@@ -99,7 +99,7 @@ DATABASES = {
     },
     'new': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'agweather_sheme.sqlite3',
+        'NAME': BASE_DIR / 'database_for_tests.sqlite3',
     },
 }
 

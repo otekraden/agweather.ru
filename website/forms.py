@@ -44,8 +44,8 @@ class ForecastTemplate2(forms.ModelForm):
 
             if not url.startswith(self.forecast_source.url):
                 self.add_error('url', ValidationError(
-                    "This URL doesn’t belong to the Domain of the Forecast \
-                        Source you previously selected."),)
+                    "This URL doesn’t belong to the Domain of the Forecast " +
+                    "Source you previously selected."),)
 
         return cleaned_data
 
@@ -88,8 +88,8 @@ class ArchiveTemplate2(forms.ModelForm):
             url = cleaned_data.get("url")
             if not url.startswith(self.archive_source.url):
                 self.add_error('url', ValidationError(
-                    "This URL doesn’t belong to the Domain of the Archive \
-                        Source you previously selected."),)
+                    "This URL doesn’t belong to the Domain of the Archive " +
+                    "Source you previously selected."),)
 
         return cleaned_data
 

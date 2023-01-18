@@ -3,7 +3,8 @@ from datascraper.models import ForecastTemplate
 
 
 class Command(BaseCommand):
-    help = 'Run forecast scraper for specified source.'
+    help = "Run weather forecast scraper for specified source. " + \
+        "If source not specified, scraper will run for all sources."
 
     def add_arguments(self, parser):
         parser.add_argument(

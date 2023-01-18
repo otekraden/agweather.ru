@@ -3,7 +3,7 @@ from datascraper.models import ForecastTemplate, ArchiveTemplate
 
 
 class Command(BaseCommand):
-    help = 'Run forecast scraper for forecast and archive.'
+    help = 'Run all weather forecast and archive scrapers.'
 
     def handle(self, *args, **kwargs):
 

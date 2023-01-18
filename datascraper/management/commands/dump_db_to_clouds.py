@@ -24,11 +24,13 @@ class Command(BaseCommand):
         filename = f"{dt}_dump_db.json"
         with open(filename, "w") as f:
             management.call_command("dumpdata", stdout=f)
+        LOGGER.debug("Dump file created")
 
         # zipping dump file
         with zipfile.ZipFile(f'{filename}.zip', 'w',
                              compression=zipfile.ZIP_DEFLATED) as myzip:
             myzip.write(filename)
+        LOGGER.debug("Dump file archived. Starting upload to Yandex Disk")
 
         # for reading environmental vars
         load_dotenv()
@@ -37,9 +39,11 @@ class Command(BaseCommand):
         try:
             yandex = yadisk.YaDisk(token=os.environ["YANDEX_TOKEN"])
             yandex.upload(f'{filename}.zip',
-                          f'agweather_dump_db/{filename}.zip')
+                          f'agweather_dump_db/{filename}.zip',
+                          timeout=(100, 100))
         except Exception as e:
             LOGGER.error(e)
+        LOGGER.debug("Sent to Yandex Disk. Starting upload Telegram")
 
         # sending dump to Telegram (file size limit 50MB)
         try:

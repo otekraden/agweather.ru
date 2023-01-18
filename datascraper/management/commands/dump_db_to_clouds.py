@@ -7,7 +7,6 @@ import tg_logger
 import zipfile
 from datascraper.logging import init_logger
 from datascraper.models import elapsed_time_decorator
-
 from django.core import management
 
 LOGGER = init_logger('Dump database to Clouds')

@@ -3,10 +3,10 @@ from website.forms import (
     ArchiveTemplate2,
 )
 from datascraper.models import ForecastSource, ArchiveSource
-from datascraper.tests import DatascraperTestBase
+from website.tests.test_views import WebsiteTestBase
 
 
-class ForecastTemplateFormTest(DatascraperTestBase):
+class ForecastTemplateFormTest(WebsiteTestBase):
 
     def setUp(self):
         self.forecast_source = \
@@ -19,7 +19,7 @@ class ForecastTemplateFormTest(DatascraperTestBase):
         self.assertFalse(form.is_valid())
 
 
-class ArchiveTemplateFormTest(DatascraperTestBase):
+class ArchiveTemplateFormTest(WebsiteTestBase):
 
     def setUp(self):
         self.archive_source = ArchiveSource.objects.get(scraper_class='rp5')

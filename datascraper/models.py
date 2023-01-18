@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Count
-from time import time
 from django.utils.decorators import method_decorator
 
 ##############
@@ -42,7 +41,7 @@ class TimeZone(models.Model):
         tzones = get_soup(
             'https://en.wikipedia.org/wiki/List_of_tz_database_time_zones')
         tzones = tzones.tbody.find_all('tr')[2:]
-        tzones = [tz.td.find_next_sibling().get_text().strip() for tz in 
+        tzones = [tz.td.find_next_sibling().get_text().strip() for tz in
                   tzones]
         cls.objects.all().delete()
         for tz in tzones:
@@ -108,12 +107,12 @@ def elapsed_time_decorator(logger):
     def decorator(func):
         def wrapper(*args, **kwargs):
             logger.info("START")
-            start_time = time()
+            start_time = datetime.now()
             result = func(*args, **kwargs)
-            end_time = time()
+            end_time = datetime.now()
             elapsed_time = end_time - start_time
             logger.info("END")
-            logger.info(f"Elapsed run time: {round(elapsed_time,1)} seconds")
+            logger.info(f"Elapsed run time: {elapsed_time}")
             return result
         return wrapper
     return decorator
@@ -229,6 +228,7 @@ class ForecastTemplate(models.Model):
             forecasts.driver.close()
             forecasts.driver.quit()
         return True
+
     # Checking for expired forecasts
     # whose data is more than an hour out of date
     @classmethod
@@ -283,7 +283,8 @@ class Forecast(models.Model):
         return datetime.now() < exp_datetime
 
     def __str__(self):
-        return f"{self.forecast_template.forecast_source} --> {self.forecast_template.location}"
+        return f"{self.forecast_template.forecast_source} " + \
+            f"--> {self.forecast_template.location}"
 
 
 ##################

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import (
+from datascraper.models import (
     TimeZone,
     validate_first_upper,
     Location,
@@ -10,7 +10,7 @@ from .models import (
     ArchiveSource,
     ArchiveTemplate,
     Archive)
-from .forecasts import BaseForecastScraper
+from datascraper.forecasts import BaseForecastScraper
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from backports import zoneinfo

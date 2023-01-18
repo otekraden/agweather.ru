@@ -3,7 +3,7 @@ from datetime import datetime
 import yadisk
 from dotenv import load_dotenv
 import os
-import tg_logger
+# import tg_logger
 import zipfile
 from datascraper.logging import init_logger
 from datascraper.models import elapsed_time_decorator
@@ -43,20 +43,20 @@ class Command(BaseCommand):
                           timeout=(100, 100))
         except Exception as e:
             LOGGER.error(e)
-        LOGGER.debug("Sent to Yandex Disk. Starting upload Telegram")
+        # LOGGER.debug("Sent to Yandex Disk. Starting upload Telegram")
 
-        # sending dump to Telegram (file size limit 50MB)
-        try:
-            token = os.environ["TELEGRAM_TOKEN"]
-            users = os.environ["TELEGRAM_USERS"].split('\n')
-            tg_files_logger = tg_logger.TgFileLogger(
-                token=token,
-                users=users,
-                timeout=10
-            )
-            tg_files_logger.send(f'{filename}.zip')
-        except Exception as e:
-            LOGGER.error(e)
+        # # sending dump to Telegram (file size limit 50MB)
+        # try:
+        #     token = os.environ["TELEGRAM_TOKEN"]
+        #     users = os.environ["TELEGRAM_USERS"].split('\n')
+        #     tg_files_logger = tg_logger.TgFileLogger(
+        #         token=token,
+        #         users=users,
+        #         timeout=10
+        #     )
+        #     tg_files_logger.send(f'{filename}.zip')
+        # except Exception as e:
+        #     LOGGER.error(e)
 
         # removing temp files
         os.remove(filename)

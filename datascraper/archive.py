@@ -10,8 +10,9 @@ import re
 
 
 def arch_rp5(start_datetime: datetime, url, end_datetime=None):
+    """Archive scraper function from RP5 source"""
 
-    #  Default archive beginning 01.01.2022 00:00 local time
+    #  Default archive end in past 01.05.2023 00:00 local time
     if not end_datetime:
         end_datetime = start_datetime.replace(
             year=2023, month=5, day=1, hour=0)
@@ -21,12 +22,13 @@ def arch_rp5(start_datetime: datetime, url, end_datetime=None):
 
     payload = {'pe': step_option}
 
-    # While cycle back to end_datetime.
+    # While cycle back in past to end_datetime.
     arch_data, date_ = [], start_datetime
     while date_ > end_datetime:
 
         payload['ArchDate'] = date_.strftime("%d.%m.%Y")
 
+        # parsing archive table
         soup = get_soup(url, payload)
         atab = soup.find('table', id='archiveTable')
 

@@ -2,10 +2,11 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 from random import choice
-from datascraper.logging import init_logger
+# from datascraper.logging import init_logger
 
 
 def set_proxy():
+    """Set proxy for all applications."""
 
     # logger = init_logger('Proxy setter')
 

@@ -28,12 +28,13 @@ def validate_first_upper(value):
             params={"value": value},
         )
 
-########
-# MISC #
-########
+#################
+# COMMON MODELS #
+#################
 
 
 class TimeZone(models.Model):
+    """Timezone choices for using in forms."""
     name = models.CharField(max_length=50)
 
     @classmethod
@@ -54,6 +55,8 @@ class TimeZone(models.Model):
 
 
 class Location(models.Model):
+    """Location. Can be any point in the World."""
+
     name = models.CharField(
         max_length=30, validators=[alpha, validate_first_upper])
     region = models.CharField(
@@ -93,6 +96,8 @@ class Location(models.Model):
 
 
 class WeatherParameter(models.Model):
+    """Processing weather parameters. Today only 3."""
+
     id = models.IntegerField(primary_key=True)
     var_name = models.CharField(max_length=10)
     name = models.CharField(max_length=30)
@@ -104,6 +109,8 @@ class WeatherParameter(models.Model):
 
 
 def elapsed_time_decorator(logger):
+    """Printing Start/End datetime for function and calc elapsed time."""
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             logger.info("START")
@@ -127,6 +134,8 @@ FS_LOGGER = init_logger('Forecast scraper')
 
 
 class ForecastSource(models.Model):
+    """Forecast source based on specific website."""
+
     scraper_class = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=30)
     url = models.URLField(max_length=200, unique=True)
@@ -141,6 +150,8 @@ class ForecastSource(models.Model):
 
 
 class ForecastTemplate(models.Model):
+    """Unique pair of Location and Forecast Source. Parent for Forecast."""
+
     forecast_source = models.ForeignKey(
         ForecastSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
@@ -156,16 +167,15 @@ class ForecastTemplate(models.Model):
     def __str__(self):
         return f"{self.forecast_source} --> {self.location}"
 
+    # run scraper for single template
     def run_template_scraper(self):
 
         FS_LOGGER.debug(f'S: {self}')
 
         local_datetime = self.location.local_datetime()
-        # FS_LOGGER.debug(f'LDT: {local_datetime}')
 
         start_forecast_datetime = \
             self.location.start_forecast_datetime()
-        # FS_LOGGER.debug(f'SFDT: {start_forecast_datetime}')
 
         scraper_class = getattr(forecasts, self.forecast_source.scraper_class)
 
@@ -181,9 +191,6 @@ class ForecastTemplate(models.Model):
         except Exception as e:
             FS_LOGGER.error(f"{self}: {e}")
             return
-
-        # FS_LOGGER.debug("Scraped forecasts: \n"+'\n'.join([
-        #     f'{f[0].isoformat()}, {f[1]}' for f in scraped_forecasts]))
 
         for forecast in scraped_forecasts:
 
@@ -201,6 +208,7 @@ class ForecastTemplate(models.Model):
         FS_LOGGER.debug(f'F: {self}')
         return True
 
+    # run scrapers for templates in class, for all if not specified
     @classmethod
     @method_decorator(elapsed_time_decorator(FS_LOGGER))
     def run_scraper(cls, scraper_class=None):
@@ -261,6 +269,8 @@ class ForecastTemplate(models.Model):
 
 
 class Forecast(models.Model):
+    """Forecast record for single datetime."""
+
     forecast_template = models.ForeignKey(
         ForecastTemplate, on_delete=models.PROTECT)
     scraped_datetime = models.DateTimeField()
@@ -268,6 +278,7 @@ class Forecast(models.Model):
     prediction_range_hours = models.IntegerField()
     forecast_data = models.JSONField()
 
+    # for database performance adding indices
     class Meta:
         indexes = [
             models.Index(fields=["scraped_datetime", "forecast_template"]),
@@ -276,6 +287,7 @@ class Forecast(models.Model):
                                  "forecast_datetime"]),
         ]
 
+    # check forecast to be not older one hour
     def is_actual(self):
         exp_datetime = timezone.make_naive(
             # self.scraped_datetime) + timedelta(minutes=10)
@@ -295,6 +307,8 @@ AS_LOGGER = init_logger('Archive scraper')
 
 
 class ArchiveSource(models.Model):
+    """Archive record for single datetime."""
+
     scraper_class = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=30)
     url = models.URLField(max_length=200, unique=True)
@@ -306,12 +320,15 @@ class ArchiveSource(models.Model):
 
 
 class ArchiveTemplate(models.Model):
+    """Unique pair of Location and Archive Source. Parent for Archive."""
+
     archive_source = models.ForeignKey(
         ArchiveSource, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     url = models.URLField(max_length=500, unique=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
+    # for database performance adding indices
     class Meta:
         ordering = ['location', 'archive_source']
         unique_together = ('archive_source', 'location')
@@ -319,6 +336,7 @@ class ArchiveTemplate(models.Model):
     def __str__(self):
         return f"{self.archive_source} --> {self.location}"
 
+    # run scraper for single template
     def run_template_scraper(self):
 
         AS_LOGGER.debug(f'S: {self}')
@@ -352,6 +370,7 @@ class ArchiveTemplate(models.Model):
 
         AS_LOGGER.debug(f'F: {self}')
 
+    # run scrapers for templates in class
     @classmethod
     @method_decorator(elapsed_time_decorator(AS_LOGGER))
     def run_scraper(cls):
@@ -364,6 +383,8 @@ class ArchiveTemplate(models.Model):
 
 
 class Archive(models.Model):
+    """Archive record for single datetime."""
+
     archive_template = models.ForeignKey(
         ArchiveTemplate, on_delete=models.PROTECT)
     scraped_datetime = models.DateTimeField()
@@ -372,6 +393,7 @@ class Archive(models.Model):
 
     class Meta:
         ordering = ['archive_template', 'record_datetime']
+        # for database performance adding indices
         indexes = [
             models.Index(fields=["archive_template", "record_datetime"]),
         ]

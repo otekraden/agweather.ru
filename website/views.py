@@ -24,6 +24,7 @@ WEATHER_PARAMETERS = [
 
 
 def forecast(request):
+    """Main view. Weather forecasts on the graph."""
 
     if request.method == 'GET':
         # Default location Saint-Petersburg
@@ -140,7 +141,7 @@ def forecast(request):
 
 
 def archive(request):
-    """View"""
+    """Weather archive on the graph."""
 
     if request.method == 'GET':
         # Default location Saint-Petersburg
@@ -181,7 +182,6 @@ def archive(request):
 
     # Getting local datetime at archive location
     timezone_info = zoneinfo.ZoneInfo(location_object.timezone)
-    # local_date = timezone.localdate(timezone=timezone_info)
 
     # Calculating end archive datetime
     end_archive_datetime = tuple(map(int, period_end_date.split('/')))
@@ -301,12 +301,13 @@ def archive(request):
 
 
 def feedback(request):
+    """Feedback theme on the Forum view."""
     feedback_topic_pk = Topic.objects.get(title='User Feedback').pk
     return redirect("forum:topic-detail", pk=feedback_topic_pk)
 
-########
-# MISC #
-########
+##################
+# MISC FUNCTIONS #
+##################
 
 
 def location_object_from_input(location):
@@ -341,6 +342,8 @@ def get_profile(request):
 ################
 
 class LocationCreateView(PermissionRequiredMixin, CreateView):
+    """User able to add Location."""
+
     permission_required = "datascraper.add_location"
 
     model = Location
@@ -369,6 +372,8 @@ FORECAST_TEMPLATES = {"f1": "website/template_wizard/f1.html",
 
 
 class ForecastTemplateWizard(PermissionRequiredMixin, SessionWizardView):
+    """User able to add Forecast Template. Three step form."""
+
     permission_required = "datascraper.add_forecasttemplate"
     form_list = FORECAST_FORMS
 
@@ -467,6 +472,8 @@ ARCHIVE_TEMPLATES = {"a1": "website/template_wizard/a1.html",
 
 
 class ArchiveTemplateWizard(PermissionRequiredMixin, SessionWizardView):
+    """User able to add Archive Template. Three step form."""
+
     permission_required = "datascraper.add_archivetemplate"
     form_list = ARCHIVE_FORMS
 
@@ -544,6 +551,8 @@ class ArchiveTemplateWizard(PermissionRequiredMixin, SessionWizardView):
 
 @login_required
 def create_new_source(request):
+    """Instruction how to add new Forecast Source."""
+
     return render(
         request=request,
         template_name='website/create_new_source.html',

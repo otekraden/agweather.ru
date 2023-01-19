@@ -28,6 +28,7 @@ def signup(request):
             group = Group.objects.get(name='Test Group')
             group.user_set.add(user)
 
+            # sending activation email to new user
             current_site = get_current_site(request)
             subject = 'AGWeather Account Activation Link'
             message = render_to_string(
@@ -37,7 +38,7 @@ def signup(request):
                  'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                  'token': account_activation_token.make_token(user),
                  })
-            print(message)
+
             user.email_user(subject, message)
 
             return render(request, 'user_profile/account_activation_sent.html')
@@ -48,7 +49,7 @@ def signup(request):
 
 
 def activate(request, uidb64, token):
-    # User = get_user_model()
+
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)

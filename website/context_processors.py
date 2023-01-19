@@ -3,10 +3,13 @@ from user_profile.models import Profile, User
 
 
 def add_variable_to_context(request):
+    """Permanent context data for all views."""
 
+    # forecast sources dropdown list
     context_add = {
             'forecast_sources': ForecastSource.dropdown_list(), }
 
+    # user avatar image url
     username = request.user.username
     if username:
         user = User.objects.get(username=username)

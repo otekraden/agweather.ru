@@ -44,7 +44,7 @@ class Command(BaseCommand):
             LOGGER.error(e)
         LOGGER.debug("Sent to Yandex Disk. Starting upload Telegram")
 
-        # sending dump to Telegram (file size limit 50MB)
+        # sending dump to Telegram (file size limit 50M)
         try:
             token = os.environ["TELEGRAM_TOKEN"]
             users = os.environ["TELEGRAM_USERS"].split('\n')

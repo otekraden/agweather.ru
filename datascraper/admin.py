@@ -9,13 +9,11 @@ from .models import (
     ArchiveSource,
     ArchiveTemplate,
     Forecast,
-    Archive,
-    # TimezoneChoice
+    Archive
     )
 
 from backports import zoneinfo
 from django.utils import timezone
-# from .forecasts import DATETIME_STEP
 from django_admin_inline_paginator.admin import TabularInlinePaginated
 
 DATA_JSON_NAME = [

@@ -14,14 +14,15 @@ from datascraper.logging import init_logger
 PROXY = set_proxy()
 
 
-######################################
-# FORECAST SOURCES SCRAPER FUNCTIONS #
-######################################
-# !To provide a call function from Forecast template class method
-# "scrap_forecasts" their names must be the same as in Database:
-# table "datascraper_forecastsource", col:"id"
+####################################
+# FORECAST SOURCES SCRAPER CLASSES #
+####################################
+# Attention!! Scraper Class name must have the same Name as in the Database,
+# table "datascraper_foreacstsource", column "scraper_class"
 
 class BaseForecastScraper():
+    """Base class for scrapers."""
+
     def __init__(self, *args, **kwargs):
         self.local_datetime = kwargs["local_datetime"]
         self.start_forecast_datetime = kwargs["start_forecast_datetime"]
@@ -32,6 +33,7 @@ class BaseForecastScraper():
         self.wind_vel_row = []
 
     def get_forecasts(self):
+        """Generating forecast records from scraped data."""
 
         forecast_data = list(
             zip(self.temp_row, self.press_row, self.wind_vel_row))
@@ -58,6 +60,8 @@ class BaseForecastScraper():
 
 
 class rp5(BaseForecastScraper):
+    """https://rp5.ru/"""
+
     def __init__(self, url, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Scraping html content from source
@@ -94,8 +98,12 @@ class rp5(BaseForecastScraper):
         self.wind_vel_row = [
             int(w.get_text()) if w else 0 for w in wind_vel_row]
 
+        # TODO: ADD NEW PARAMETER HERE
+
 
 class yandex(BaseForecastScraper):
+    """https://yandex.ru/pogoda"""
+
     def __init__(self, url, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -145,8 +153,12 @@ class yandex(BaseForecastScraper):
         # Parsing time row from source
         self.time_row = [9, 15, 21, 3]*(len(temp_row)//4)
 
+        # TODO: ADD NEW PARAMETER HERE
+
 
 class meteoinfo(BaseForecastScraper):
+    """https://meteoinfo.ru/forecasts/"""
+
     def __init__(self, url, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -182,8 +194,12 @@ class meteoinfo(BaseForecastScraper):
             self.time_row.append(time)
             time = 15 if time == 3 else 3
 
+        # TODO: ADD NEW PARAMETER HERE
+
 
 class foreca(BaseForecastScraper):
+    """https://www.foreca.ru/"""
+
     def __init__(self, url, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -232,6 +248,10 @@ class foreca(BaseForecastScraper):
             wind_vel_row = [int(w.find('span', class_='value wind wind_ms').
                                 get_text().split()[0]) for w in wind_vel_row]
             self.wind_vel_row.extend(wind_vel_row)
+
+            # TODO: ADD NEW PARAMETER HERE
+
+# TODO: ADD NEW FORECAST SCRAPER CLASS HERE
 
 
 ########
@@ -363,6 +383,7 @@ def init_selenium_driver():
 
 
 def selenium_proxy(username, password, endpoint, port):
+    """Enabling using proxy with Selenium."""
     manifest_json = """
     {
         "version": "1.0.0",

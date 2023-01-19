@@ -302,9 +302,17 @@ def archive(request):
 
 def feedback(request):
     """Feedback theme on the Forum view."""
-    feedback_topic_pk = Topic.objects.get(title='User Feedback').pk
+    feedback_topic_pk = Topic.objects.get(title='Users Feedbacks').pk
     return redirect("forum:topic-detail", pk=feedback_topic_pk)
 
+
+def idea(request):
+    """The Website Idea."""
+
+    return render(
+        request=request,
+        template_name='website/idea.html',
+        )
 ##################
 # MISC FUNCTIONS #
 ##################
@@ -556,4 +564,4 @@ def create_new_source(request):
     return render(
         request=request,
         template_name='website/create_new_source.html',
-        context={'url': "https://github.com/venom812/agweather.online"})
+        context={'url': "https://github.com/venom812/agweather.ru"})

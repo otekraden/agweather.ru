@@ -8,7 +8,7 @@ It has already been deployed at: https://www.agweather.ru/
 <p align="center">
   <p align="center">
     <a href="https://www.agweather.ru/" target="_blank">
-<!--       <img src="https://www.agweather.ru/media/agw_screenshot.png" alt="JustDjango" height="400"> -->
+      <img src="https://www.agweather.ru/media/agw_screenshot.png" alt="JustDjango" height="400">
   </p>
 </p>
       

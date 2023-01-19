@@ -25,7 +25,7 @@ def signup(request):
             user = form.save(commit=False)
             user.is_active = False
             user.save()
-            group = Group.objects.get(name='Test Group')
+            group = Group.objects.get(name='Contribution')
             group.user_set.add(user)
 
             # sending activation email to new user

@@ -2,7 +2,7 @@ At this point in time, this project was created for only educational purposes as
 
 ## AGWeather == Aggregator of the Weather Forecasts 
 
-This wep application was built on Python using Django framework. <br/>
+This web application was built on Python using Django framework. <br/>
 It has already been deployed at: https://www.agweather.ru/
 
 <p align="center">
@@ -12,7 +12,7 @@ It has already been deployed at: https://www.agweather.ru/
   </p>
 </p>
       
-## Project Idea
+## The Project Idea
 
 The idea of the project came with the following question: <br/>
 

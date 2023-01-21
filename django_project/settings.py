@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'datascraper.apps.DatascraperConfig',
     'django_admin_inline_paginator',
     'widget_tweaks',
+    'rest_framework',
+    'agweather_rest.apps.AgweatherRestConfig',
 ]
 
 MIDDLEWARE = [

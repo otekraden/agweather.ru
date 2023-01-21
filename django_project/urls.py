@@ -25,6 +25,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('user_profile/', include('user_profile.urls')),
     path('forum/', include('forum.urls')),
+    path('api/', include('agweather_rest.urls')),
 ]
 
 if settings.DEBUG:

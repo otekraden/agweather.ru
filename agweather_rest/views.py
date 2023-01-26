@@ -1,33 +1,26 @@
-from rest_framework import generics
-from datascraper.models import Location
-from .serializers import LocationSerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.forms import model_to_dict
+from datascraper.models import Location, ForecastTemplate, ArchiveTemplate
+from .serializers import (
+    LocationSerializer, ForecastTemplateSerializer, ArchiveTemplateSerializer)
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .permissions import IsOwnerOrReadOnly
 
 
-class LocationViewSet(viewsets.ModelViewSet):
-    queryset = Location.objects.all()
-    serializer_class = LocationSerializer
+class BaseDatascraperViewSet(viewsets.ModelViewSet):
+    """Base serializer for datascraper models."""
     permission_classes = [IsAuthenticated & IsOwnerOrReadOnly | IsAdminUser]
 
 
-# class LocationsAPIView(generics.ListAPIView):
-#     queryset = Location.objects.all()
-#     serializer_class = LocationSerializer
+class LocationViewSet(BaseDatascraperViewSet):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer
 
-# class LocationsAPIView(APIView):
-#     def get(self, request):
-#         lst = Location.objects.all().values()
-#         return Response({'locations': list(lst)})
 
-#     def post(self, request):
-#         post_new = Location.objects.create(
-#             name=request.data['name'],
-#             region=request.data['region'],
-#             country=request.data['country'],
-#         )
-#         return Response({'post': model_to_dict(post_new)})
+class ForecastTemplateViewSet(BaseDatascraperViewSet):
+    queryset = ForecastTemplate.objects.all()
+    serializer_class = ForecastTemplateSerializer
+
+
+class ArchiveTemplateViewSet(BaseDatascraperViewSet):
+    queryset = ArchiveTemplate.objects.all()
+    serializer_class = ArchiveTemplateSerializer

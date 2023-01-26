@@ -5,15 +5,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.forms import model_to_dict
 from rest_framework import viewsets
-# from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
-from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from .permissions import IsOwnerOrReadOnly
 
 
 class LocationViewSet(viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
-    permission_classes = (IsAdminOrReadOnly, IsOwnerOrReadOnly)
-    # permission_classes = (IsAdminUser, )
+    permission_classes = [IsAuthenticated & IsOwnerOrReadOnly | IsAdminUser]
+
 
 # class LocationsAPIView(generics.ListAPIView):
 #     queryset = Location.objects.all()

@@ -3,6 +3,9 @@ from datascraper.models import Location
 
 
 class LocationSerializer(serializers.ModelSerializer):
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Location
-        fields = ('name', 'region', 'country', 'timezone')
+        fields = '__all__'
+        # fields = ('name', 'region', 'country', 'timezone')

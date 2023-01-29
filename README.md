@@ -20,7 +20,7 @@ _What happens if you save the weather forecast data and then compare it with the
 
 Thus, it will be possible to graphically evaluate which of the services is most accurate in certain conditions.
 
-## Stack of Applied Technologies
+## Stack of Used Technologies
 
 - Django
 - Bootstrap

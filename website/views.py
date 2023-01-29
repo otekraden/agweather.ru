@@ -24,7 +24,7 @@ WEATHER_PARAMETERS = [
 
 
 def forecast(request):
-    """Main view. Weather forecasts on the graph."""
+    """Main view. Weather forecasts on the Chartjs graph."""
 
     if request.method == 'GET':
         # Default location Saint-Petersburg
@@ -37,10 +37,13 @@ def forecast(request):
 
     elif request.method == 'POST':
         location = request.POST.get('location')
+        # Save selected location in session
         request.session['location'] = location
         weather_parameter = request.POST.get('weather_parameter')
+        # Save selected parameter in session
         request.session['weather_parameter'] = weather_parameter
         selection_period = request.POST.get('selection_period')
+        # Save selected period in session
         request.session['selection_period'] = selection_period
 
     selection_period = check_int_input(selection_period, 1, 14, 7)
@@ -158,10 +161,13 @@ def archive(request):
 
     elif request.method == 'POST':
         location = request.POST.get('location')
+        # Save selected location in session
         request.session['location'] = location
         weather_parameter = request.POST.get('weather_parameter')
+        # Save selected parameter in session
         request.session['weather_parameter'] = weather_parameter
         selection_period = request.POST.get('selection_period')
+        # Save selected period in session
         request.session['selection_period'] = selection_period
         period_end_date = request.POST.get('period_end_date')
         prediction_range = request.POST.get('prediction_range')

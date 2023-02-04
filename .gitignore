@@ -132,3 +132,4 @@ static/*
 media/
 database_for_tests.sqlite3
 
+Dockerfile

@@ -9,7 +9,7 @@ rm -rf django_project/
 rm manage.py
 rm -rf static/
 
-git clone https://github.com/venom812/agweather.online.git .
+git clone https://github.com/venom812/agweather.git .
 
 source ../bin/activate
 

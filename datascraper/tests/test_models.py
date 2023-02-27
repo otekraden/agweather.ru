@@ -13,7 +13,7 @@ from datascraper.models import (
 from datascraper.forecasts import BaseForecastScraper
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from backports import zoneinfo
+from zoneinfo import ZoneInfo
 from datetime import timedelta
 
 
@@ -44,20 +44,20 @@ class LocationTestCase(DatascraperTestBase):
     def test_location_local_datetime(self):
         self.assertTrue(
             self.location.local_datetime() - timezone.localtime(
-                timezone=zoneinfo.ZoneInfo(
+                timezone=ZoneInfo(
                     'Europe/Moscow')) < timedelta(seconds=1))
 
     def test_location_start_forecast_datetime(self):
         self.assertTrue(
             self.location.start_forecast_datetime() - timezone.localtime(
-                timezone=zoneinfo.ZoneInfo('Europe/Moscow')).replace(
+                timezone=ZoneInfo('Europe/Moscow')).replace(
                 minute=0, second=0, microsecond=0) - timedelta(
                     hours=1) < timedelta(seconds=1))
 
     def test_location_start_archive_datetime(self):
         self.assertTrue(
             self.location.start_archive_datetime() - timezone.localtime(
-                timezone=zoneinfo.ZoneInfo('Europe/Moscow')).replace(
+                timezone=ZoneInfo('Europe/Moscow')).replace(
                 minute=0, second=0, microsecond=0) < timedelta(seconds=1))
 
     def test_locations_list(self):

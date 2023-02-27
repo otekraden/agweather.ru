@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from datascraper.models import (
     WeatherParameter, Location, ForecastTemplate, Forecast,
     ArchiveTemplate, Archive, ArchiveSource)
-from backports import zoneinfo
+from zoneinfo import ZoneInfo
 from django.utils import timezone
 from datetime import timedelta, datetime
 from user_profile.models import Profile
@@ -187,7 +187,7 @@ def archive(request):
         location=location_object)
 
     # Getting local datetime at archive location
-    timezone_info = zoneinfo.ZoneInfo(location_object.timezone)
+    timezone_info = ZoneInfo(location_object.timezone)
 
     # Calculating end archive datetime
     end_archive_datetime = tuple(map(int, period_end_date.split('/')))

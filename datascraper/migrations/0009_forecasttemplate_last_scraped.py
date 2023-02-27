@@ -2,7 +2,7 @@
 
 import datetime
 from django.db import migrations, models
-from backports import zoneinfo
+from zoneinfo import ZoneInfo
 from datetime import datetime
 
 
@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
             # field=models.DateTimeField(default=datetime.datetime(2023, 10, 4, 20, 7, 50, 374749)),
             field=models.DateTimeField(
                 default=datetime.fromtimestamp(
-                    0, tz=zoneinfo.ZoneInfo('UTC'))),
+                    0, tz=ZoneInfo('UTC'))),
         ),
     ]

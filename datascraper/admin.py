@@ -12,7 +12,7 @@ from .models import (
     Archive
     )
 
-from backports import zoneinfo
+from zoneinfo import ZoneInfo
 from django.utils import timezone
 from django_admin_inline_paginator.admin import TabularInlinePaginated
 
@@ -152,14 +152,14 @@ class ForecastInline(TabularInlinePaginated):
 
         return timezone.localtime(
             value=obj.scraped_datetime,
-            timezone=zoneinfo.ZoneInfo(obj.forecast_template.location.timezone)
+            timezone=ZoneInfo(obj.forecast_template.location.timezone)
             ).isoformat(sep=' ', timespec='minutes')
 
     def forecast_datetime_(self, obj):
 
         return timezone.localtime(
             value=obj.forecast_datetime,
-            timezone=zoneinfo.ZoneInfo(obj.forecast_template.location.timezone)
+            timezone=ZoneInfo(obj.forecast_template.location.timezone)
             ).isoformat(sep=' ', timespec='minutes')
 
     @admin.display(description=format_html(DATA_JSON_NAME))
@@ -225,7 +225,7 @@ class ArchiveInline(TabularInlinePaginated):
 
         local_datetime = timezone.localtime(
             value=obj.record_datetime,
-            timezone=zoneinfo.ZoneInfo(obj.archive_template.location.timezone)
+            timezone=ZoneInfo(obj.archive_template.location.timezone)
             ).isoformat(sep=' ', timespec='minutes')
 
         return local_datetime

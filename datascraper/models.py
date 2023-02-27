@@ -2,7 +2,7 @@ from django.db import models
 from datetime import datetime, timedelta
 from django.utils import timezone
 from datascraper import forecasts, archive
-from backports import zoneinfo
+from zoneinfo import ZoneInfo
 import collections
 from datascraper.logging import init_logger
 from datascraper.forecasts import get_soup
@@ -73,7 +73,7 @@ class Location(models.Model):
 
     # Getting local datetime at location
     def local_datetime(self):
-        return timezone.localtime(timezone=zoneinfo.ZoneInfo(self.timezone))
+        return timezone.localtime(timezone=ZoneInfo(self.timezone))
 
     # Calculating start forecast datetime
     def start_forecast_datetime(self):
@@ -157,7 +157,7 @@ class ForecastTemplate(models.Model):
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     url = models.URLField(max_length=500, unique=True)
     last_scraped = models.DateTimeField(
-        default=datetime.fromtimestamp(0, tz=zoneinfo.ZoneInfo('UTC')))
+        default=datetime.fromtimestamp(0, tz=ZoneInfo('UTC')))
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:
@@ -341,7 +341,7 @@ class ArchiveTemplate(models.Model):
 
         AS_LOGGER.debug(f'S: {self}')
 
-        timezone_info = zoneinfo.ZoneInfo(self.location.timezone)
+        timezone_info = ZoneInfo(self.location.timezone)
         start_archive_datetime = self.location.start_archive_datetime()
 
         try:

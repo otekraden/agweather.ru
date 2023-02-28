@@ -3,6 +3,7 @@ attrs==23.1.0
 beautifulsoup4==4.12.2
 certifi==2023.7.22
 charset-normalizer==3.2.0
+coverage==7.4.3
 Django==4.2.4
 django-admin-inline-paginator==0.4.0
 django-formtools==2.5.1

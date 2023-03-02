@@ -6,7 +6,9 @@ import requests
 from fake_useragent import UserAgent
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium_stealth import stealth
+# from selenium.webdriver.common.desired_capabilities
+# import DesiredCapabilities
+# from selenium_stealth import stealth
 import zipfile
 from datascraper.proxy import set_proxy
 from datascraper.logging import init_logger
@@ -365,7 +367,12 @@ def init_selenium_driver():
     options.page_load_strategy = 'eager'
 
     # create a driver instance
-    driver = webdriver.Chrome(options=options)
+    # driver = webdriver.Chrome(options=options)
+
+    # create a driver instance from docker container
+    driver = webdriver.Remote(
+        command_executor='http://127.0.0.1:4444/wd/hub', options=options)
+
     # Change the property value of the navigator for webdriver to undefined
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', \
                           {get: () => undefined})")
@@ -373,15 +380,15 @@ def init_selenium_driver():
     # pass in selected user agent as an argument
     options.add_argument(f'user-agent={UserAgent().random}')
 
-    # enable stealth mode
-    stealth(driver,
-            languages=["en-US", "en"],
-            vendor="Google Inc.",
-            platform="Win32",
-            webgl_vendor="Intel Inc.",
-            renderer="Intel Iris OpenGL Engine",
-            fix_hairline=True,
-            )
+    # # enable stealth mode
+    # stealth(driver,
+    #         languages=["en-US", "en"],
+    #         vendor="Google Inc.",
+    #         platform="Win32",
+    #         webgl_vendor="Intel Inc.",
+    #         renderer="Intel Iris OpenGL Engine",
+    #         fix_hairline=True,
+    #         )
 
     return driver
 

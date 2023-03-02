@@ -12,8 +12,10 @@ from selenium.webdriver.chrome.options import Options
 import zipfile
 from datascraper.proxy import set_proxy
 from datascraper.logging import init_logger
+import os
 
 PROXY = set_proxy()
+SELENIUM_HOST = os.environ.get("SELENIUM_HOST")
 
 
 ####################################
@@ -371,7 +373,8 @@ def init_selenium_driver():
 
     # create a driver instance from docker container
     driver = webdriver.Remote(
-        command_executor='http://127.0.0.1:4444/wd/hub', options=options)
+        command_executor=f'http://{SELENIUM_HOST}:4444/wd/hub',
+        options=options)
 
     # Change the property value of the navigator for webdriver to undefined
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', \

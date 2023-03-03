@@ -134,3 +134,4 @@ database_for_tests.sqlite3
 
 Dockerfile
 entrypoint.sh
+*.sql

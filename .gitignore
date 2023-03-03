@@ -130,3 +130,5 @@ website/static/website/js/*
 
 static/*
 media/
+Dockerfile
+entrypoint.sh

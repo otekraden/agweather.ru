@@ -305,12 +305,19 @@ def month_name_to_number(name):
     # [ord(l) for l in 'фeв'] == [1092, 101!!, 1074]
     elif name == 'фeв':
         return 2
+    # 01.03.2024 fix bug with meteoinfo.ru
+    # [ord(l) for l in 'фeв'] == [1084, 97!!, 1088]
+    elif name == 'мaр':
+        return 3
 
     month_tuple = ('янв', 'фев', 'мар', 'апр', 'мая', 'июн',  # RUS
                    'июл', 'авг', 'сен', 'окт', 'ноя', 'дек',
                    'jan', 'feb', 'mar', 'apr', 'may', 'jun',  # ENG
                    'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
-    return month_tuple.index(name) % 12 + 1
+
+    index = month_tuple.index(name)
+
+    return index % 12 + 1
 
 
 ############

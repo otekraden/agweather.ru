@@ -3,11 +3,11 @@ version: '3.8'
 services:
   backend:
     image: otekvonsoraden/agweather_backend:latest
-    # container_name: backend
+    container_name: backend
     restart: always
-    build: 
-      context: ../..
-      dockerfile: Dockerfile.prod
+    # build: 
+    #   context: ../..
+    #   dockerfile: Dockerfile.prod
     # ports:
     #   - ${BACKEND_PORT}:${BACKEND_PORT}
     expose:

@@ -6,7 +6,7 @@
 FROM python:3.11.8-slim-bookworm as builder
 
 # set work directory
-WORKDIR /usr/src/backend
+WORKDIR /usr/src/agweather
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -19,7 +19,7 @@ RUN apt-get update && \
 # install python dependencies
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/backend/wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/agweather/wheels -r requirements.txt
 
 #########
 # FINAL #
@@ -29,14 +29,14 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/backend/wheels -r re
 FROM python:3.11.8-slim-bookworm
 
 # create directory for the backend user
-RUN mkdir -p /home/backend
+RUN mkdir -p /home/agweather
 
 # create the app user
-RUN addgroup --system backend && adduser --system --group backend
+RUN addgroup --system agweather && adduser --system --group agweather
 
 # create the appropriate directories
-ENV HOME=/home/backend
-ENV APP_HOME=/home/backend/backend
+ENV HOME=/home/agweather
+ENV APP_HOME=/home/agweather/backend
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/static
 RUN mkdir $APP_HOME/media
@@ -44,8 +44,8 @@ WORKDIR $APP_HOME
 
 # install dependencies
 # RUN apt-get update && apt-get install -y --no-install-recommends netcat
-COPY --from=builder /usr/src/backend/wheels /wheels
-COPY --from=builder /usr/src/backend/requirements.txt .
+COPY --from=builder /usr/src/agweather/wheels /wheels
+COPY --from=builder /usr/src/agweather/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
 
@@ -58,10 +58,10 @@ RUN pip install --no-cache /wheels/*
 COPY . $APP_HOME
 
 # chown all the files to the backend user
-RUN chown -R backend:backend $APP_HOME
+RUN chown -R agweather:agweather $APP_HOME
 
 # change to the backend user
-USER backend
+USER agweather
 
 # run entrypoint.prod.sh
 # ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]

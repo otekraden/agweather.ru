@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   backend:
+    # image: otekvonsoraden/agweather_backend:latest
     container_name: backend
     restart: always
     build: 
@@ -12,8 +13,10 @@ services:
     expose:
       - ${BACKEND_PORT}
     volumes:
-      - static_volume:/home/backend/backend/static
-      - media_volume:/home/backend/backend/media
+      - static_volume:/home/agweather/backend/static
+      - media_volume:/home/agweather/backend/media
+      # - static_volume:/home/backend/backend/static
+      # - media_volume:/home/backend/backend/media
     env_file:
       - .env
     depends_on:
@@ -45,6 +48,7 @@ services:
       - 4444:4444
 
   nginx:
+    # image: otekvonsoraden/nginx:latest
     build: ./nginx
     container_name: nginx
     restart: always
@@ -53,8 +57,10 @@ services:
     depends_on:
       - backend
     volumes:
-      - static_volume:/home/backend/backend/static
-      - media_volume:/home/backend/backend/media
+      - static_volume:/home/agweather/backend/static
+      - media_volume:/home/agweather/backend/media
+      # - static_volume:/home/backend/backend/static
+      # - media_volume:/home/backend/backend/media
       
 volumes:
   postgres_data:

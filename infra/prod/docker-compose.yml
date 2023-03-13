@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   backend:
-    # image: otekvonsoraden/agweather_backend:latest
-    container_name: backend
+    image: otekvonsoraden/agweather_backend:latest
+    # container_name: backend
     restart: always
     build: 
       context: ../..
@@ -48,8 +48,8 @@ services:
       - 4444:4444
 
   nginx:
-    # image: otekvonsoraden/nginx:latest
-    build: ./nginx
+    image: otekvonsoraden/nginx:latest
+    # build: ./nginx
     container_name: nginx
     restart: always
     ports:

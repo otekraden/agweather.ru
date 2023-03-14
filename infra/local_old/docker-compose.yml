@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: backend
+    restart: always
+    build: 
+      context: ../../backend
+      dockerfile: Dockerfile.local
+    ports:
+      - ${BACKEND_PORT}:${BACKEND_PORT}
+    volumes:
+      - ./entrypoint.sh:/backend/entrypoint.sh
+      - ../../backend/:/backend/
+    env_file:
+      - .env
+    depends_on:
+      - db
+    # command: python manage.py runserver 0.0.0.0:${BACKEND_PORT}
+    command: "sh /backend/entrypoint.sh"
+
+  db:
+    image: postgres:15
+    container_name: db
+    restart: always
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    # pg_dump -C -h 134.0.112.35 -U anton -W agweather_db > dump_agweather_db.sql
+    # Nahsi7ahboid#004
+    # docker exec -it db psql --user=anton --dbname=postgres
+    # DROP DATABASE agweather_db;
+    # cat dump_agweather_db.sql | docker exec -i db psql --user=anton --dbname=postgres
+
+
+  selenium:
+    image: selenium/standalone-chrome:latest
+    container_name: selenium
+    restart: always
+    ports:
+      - 4444:4444
+      
+volumes:
+  postgres_data:

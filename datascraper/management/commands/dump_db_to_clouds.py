@@ -1,76 +1,60 @@
 from django.core.management.base import BaseCommand
 from datetime import datetime
 import yadisk
-from dotenv import load_dotenv
 import os
-# import tg_logger
-import zipfile
+import subprocess
 from datascraper.logging import init_logger
 from datascraper.models import elapsed_time_decorator
-# from django.core import management
 
-LOGGER = init_logger('Dump database to Clouds')
+LOGGER = init_logger('Dump database & media to Yandex Disk')
 
 
 class Command(BaseCommand):
-    help = 'Dump data from database to Cloud services.'
+    help = 'Dump data from database & media folder to Yandex Disk.'
 
     @elapsed_time_decorator(LOGGER)
     def handle(self, *args, **kwargs):
 
-        # making dump file
+        # making dump names
         dt = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        filename = f"{dt}_dump_db"
-        # with open(filename, "w") as f:
-        #     management.call_command("dumpdata", stdout=f)
+        dump_name = f"{dt}_dump"
+        db_file_name = f"{dt}_db"
 
-        # for reading environmental vars
-        load_dotenv()
-        postgres_db = os.environ["POSTGRES_DB"]
-        postgres_user = os.environ["POSTGRES_USER"]
+        # creating database dump file
+        process = subprocess.run(
+            ['pg_dump',
+                '--dbname=postgresql://anton:Nahsi7ahboid#004@localhost:5432/agweather_db',
+                '-Fc',
+                # '-v',
+                '-f',
+                db_file_name])
 
-        # creating dump file
-        os.system(f"pg_dump -U {postgres_user} -Fc \
-                #   --exclude-table 'public.django_content_type' \
-                #   --exclude-table 'public.auth_permission' \
-                  {postgres_db} > {filename}")
+        if process.returncode:
+            LOGGER.debug('Command failed. Return code : {}'.format(
+                process.returncode))
+            exit(1)
 
-        LOGGER.debug("Dump file created")
+        LOGGER.debug("Dump database file created")
 
-        # zipping dump file
-        with zipfile.ZipFile(f'{filename}.zip', 'w',
-                             compression=zipfile.ZIP_DEFLATED) as myzip:
-            myzip.write(filename)
-        LOGGER.debug("Dump file archived. Starting upload to Yandex Disk")
+        # zipping database vs media
+        subprocess.run(['zip', '-r', '-q',
+                        f'{dump_name}.zip',
+                        f'{db_file_name}',
+                        'media',
+                        ])
 
-        # for reading environmental vars
-        load_dotenv()
+        LOGGER.debug("Database dump file & media folder zipped")
 
         # sending dump to Yandex Disk
         try:
-            yandex = yadisk.YaDisk(token=os.environ["YANDEX_TOKEN"])
-            yandex.upload(f'{filename}.zip',
-                          f'agweather_dump_db/{filename}.zip',
+            yandex = yadisk.YaDisk(token=os.environ.get("YANDEX_TOKEN"))
+            yandex.upload(f'{dump_name}.zip',
+                          f'agweather_dump_db/{dump_name}.zip',
                           timeout=(100, 100))
         except Exception as e:
             LOGGER.error(e)
-        # LOGGER.debug("Sent to Yandex Disk. Starting upload Telegram")
-
-        # # sending dump to Telegram (file size limit 50MB)
-        # try:
-        #     token = os.environ["TELEGRAM_TOKEN"]
-        #     users = os.environ["TELEGRAM_USERS"].split('\n')
-        #     tg_files_logger = tg_logger.TgFileLogger(
-        #         token=token,
-        #         users=users,
-        #         timeout=10
-        #     )
-        #     tg_files_logger.send(f'{filename}.zip')
-        # except Exception as e:
-        #     LOGGER.error(e)
+        LOGGER.debug("Sent to Yandex Disk")
 
         # removing temp files
-        # os.remove(filename)
-        # os.remove(f'{filename}.zip')
-
-        LOGGER.debug("Database successfully sent to cloud services.")
+        os.remove(db_file_name)
+        os.remove(f'{dump_name}.zip')

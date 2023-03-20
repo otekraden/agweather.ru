@@ -7,7 +7,7 @@ import os
 import zipfile
 from datascraper.logging import init_logger
 from datascraper.models import elapsed_time_decorator
-from django.core import management
+# from django.core import management
 
 LOGGER = init_logger('Dump database to Clouds')
 
@@ -20,9 +20,21 @@ class Command(BaseCommand):
 
         # making dump file
         dt = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        filename = f"{dt}_dump_db.json"
-        with open(filename, "w") as f:
-            management.call_command("dumpdata", stdout=f)
+        filename = f"{dt}_dump_db"
+        # with open(filename, "w") as f:
+        #     management.call_command("dumpdata", stdout=f)
+
+        # for reading environmental vars
+        load_dotenv()
+        postgres_db = os.environ["POSTGRES_DB"]
+        postgres_user = os.environ["POSTGRES_USER"]
+
+        # creating dump file
+        os.system(f"pg_dump -U {postgres_user} -Fc \
+                #   --exclude-table 'public.django_content_type' \
+                #   --exclude-table 'public.auth_permission' \
+                  {postgres_db} > {filename}")
+
         LOGGER.debug("Dump file created")
 
         # zipping dump file
@@ -58,7 +70,7 @@ class Command(BaseCommand):
         #     LOGGER.error(e)
 
         # removing temp files
-        os.remove(filename)
-        os.remove(f'{filename}.zip')
+        # os.remove(filename)
+        # os.remove(f'{filename}.zip')
 
         LOGGER.debug("Database successfully sent to cloud services.")
